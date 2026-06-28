@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅游路线 · 轨迹地图</title>
 <meta name="theme-color" content="#0d0a06">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-:root{--bg:#0d0a06;--surface:#18130d;--surface-2:#201912;--border:rgba(160,130,90,.1);--border-strong:rgba(160,130,90,.16);--text:#e8dfd2;--text-2:#a89880;--text-3:#6b5d4a;--gold:#d4a44c;--gold-soft:rgba(212,164,76,.1);--gold-border:#b8893a;--amber:#e8c050;--accent-beijing:#e89840;--accent-shanghai:#e06060;--accent-xian:#60a870}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{--bg:#0d0a06;--surface:#18130d;--border:rgba(160,130,90,.1);--border-strong:rgba(160,130,90,.16);--text:#e8dfd2;--text-2:#a89880;--text-3:#6b5d4a;--gold:#d4a44c;--gold-soft:rgba(212,164,76,.1);--gold-border:#b8893a;--amber:#e8c050}
 body{font-family:"Urbanist","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
 body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3)}
-.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s ease}
+.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
 .app-loading.hide{opacity:0;pointer-events:none}
 .loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -30,7 +28,7 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .sidebar{width:360px;min-width:360px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
 .sidebar-head{padding:18px 22px 14px;border-bottom:1px solid var(--border)}
 .sidebar-head .kicker{font-size:9px;font-weight:700;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
-.sidebar-head h2{font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;color:#dcc8a8;letter-spacing:1px}
+.sidebar-head h2{font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;color:#dcc8a8}
 .sidebar-head .info{font-size:11px;color:var(--text-3);margin-top:4px}
 .itinerary{flex:1;overflow-y:auto;padding:6px 14px 14px 20px;scroll-behavior:smooth}
 .stop-item{position:relative;padding:13px 0 13px 30px;cursor:pointer;border-radius:10px;margin:1px 0;transition:all .35s}
@@ -49,18 +47,16 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .stop-desc{font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.5}
 .map-area{flex:1;position:relative}
 .landmark-banner{position:absolute;top:0;left:0;right:0;height:200px;z-index:3;overflow:hidden;border-bottom:1px solid var(--border)}
-.landmark-banner .bg-layer{position:absolute;inset:0;transition:opacity .8s ease}
-.landmark-banner .bg-photo{background-size:cover;background-position:center;opacity:0}
-.landmark-banner .bg-photo.show{opacity:1}
-.landmark-banner .bg-gradient{opacity:1}
-.landmark-banner .banner-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,10,6,.92) 0%,rgba(13,10,6,.4) 50%,rgba(13,10,6,.15) 100%)}
-.landmark-banner .banner-frame{position:absolute;inset:0;border:1px solid rgba(255,255,255,.04);margin:8px;border-radius:2px;pointer-events:none}
+.landmark-banner .bg-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .6s}
+.landmark-banner .bg-img.on{opacity:1}
+.landmark-banner .bg-gradient{position:absolute;inset:0;opacity:1;transition:opacity .6s}
+.landmark-banner .bg-gradient.off{opacity:0}
+.landmark-banner .banner-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,10,6,.9) 0%,rgba(13,10,6,.35) 50%,rgba(13,10,6,.1) 100%)}
 .landmark-banner .banner-info{position:absolute;bottom:16px;left:20px;right:20px;display:flex;align-items:flex-end;justify-content:space-between}
-.landmark-banner .banner-title{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);line-height:1.2}
-.landmark-banner .banner-loc{font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:1px}
+.landmark-banner .banner-title{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.landmark-banner .banner-loc{font-size:11px;color:rgba(255,255,255,.6);margin-top:4px}
 .landmark-banner .banner-emoji{font-size:48px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.5));flex-shrink:0;margin-left:12px}
-.landmark-banner .photo-loader{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;animation:spin .6s linear infinite;opacity:0;transition:opacity .3s}
-.landmark-banner .photo-loader.show{opacity:1}
+.landmark-banner .banner-spin{position:absolute;top:12px;right:16px;width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .6s linear infinite;display:none}
 #map{margin-top:200px;height:calc(100% - 200px);width:100%;background:var(--bg)}
 .map-top{position:absolute;top:212px;left:12px;z-index:5}
 .layer-ctrl{display:flex;gap:3px;background:rgba(13,10,6,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:3px;border-radius:18px;border:1px solid var(--border);flex-wrap:wrap;max-width:148px}
@@ -73,7 +69,6 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .map-ctrl{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .35s;color:var(--text-2);flex-shrink:0}
 .map-ctrl:hover{border-color:var(--border-strong);color:var(--text)}
 .map-ctrl.playing{background:var(--gold-soft);border-color:rgba(212,164,76,.3);color:var(--gold)}
-.map-ctrl:disabled{opacity:.3;cursor:default}
 .map-info{font-size:10px;color:var(--text-2);font-weight:500;min-width:60px;text-align:center}
 .toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);z-index:6;font-size:14px;font-weight:600;background:rgba(13,10,6,.92);border:1px solid rgba(212,164,76,.25);padding:7px 18px;border-radius:16px;pointer-events:none;opacity:0;transition:all .4s;color:var(--gold)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -108,12 +103,11 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 <div class="itinerary" id="itinerary"></div>
 </div>
 <div class="map-area">
-<div class="landmark-banner" id="landmarkBanner">
-<div class="bg-layer bg-photo" id="bannerPhoto"></div>
-<div class="bg-layer bg-gradient" id="bannerGradient" style="background:linear-gradient(135deg,#1a1410,#2a1f14,#3a2a18,#1a1410)"></div>
-<div class="photo-loader" id="photoLoader"></div>
+<div class="landmark-banner" id="banner">
+<div class="bg-img" id="bannerImg"></div>
+<div class="bg-gradient" id="bannerGrad" style="background:linear-gradient(135deg,#1a1410,#2a1f14,#3a2a18,#1a1410)"></div>
+<div class="banner-spin" id="bannerSpin"></div>
 <div class="banner-overlay"></div>
-<div class="banner-frame"></div>
 <div class="banner-info">
 <div>
 <div class="banner-title" id="bannerTitle"></div>
@@ -123,9 +117,7 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 </div>
 </div>
 <div id="map"></div>
-<div class="map-top">
-<div class="layer-ctrl" id="layerCtrl"></div>
-</div>
+<div class="map-top"><div class="layer-ctrl" id="layerCtrl"></div></div>
 <button class="btn-back" onclick="history.back()">← 返回</button>
 <div class="toast" id="mapToast"></div>
 <div class="map-overlay">
@@ -138,86 +130,92 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-var tileProviders=[
-  {name:"高德标准",icon:"🗺️",src:"https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",attr:"高德",subdomains:"1234"},
-  {name:"高德卫星",icon:"🛰️",src:"https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",attr:"高德",subdomains:"1234"},
+var TP=[
+  {name:"高德标准",icon:"🗺️",src:"https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",attr:"高德",sub:"1234"},
+  {name:"高德卫星",icon:"🛰️",src:"https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",attr:"高德",sub:"1234"},
   {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
   {name:"街道",icon:"🏙️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
 ];
-var routes=[
-  {id:"beijing",name:"北京精华游",emoji:"🏯",color:"#e89840",colorHex:"#e89840",center:[39.920,116.410],zoom:12,info:"三天五步 · 古都之心 · 约48 km",
-   stops:[
-    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",emoji:"🏛️",bg:"linear-gradient(135deg,#3a2018,#5a3020,#4a2818,#221008)",wiki:"Tiananmen"},
-    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",emoji:"🏯",bg:"linear-gradient(135deg,#3a1a10,#5a2818,#4a2014,#201008)",wiki:"Forbidden_City"},
-    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",emoji:"🛕",bg:"linear-gradient(135deg,#182838,#243850,#2e4260,#101c28)",wiki:"Temple_of_Heaven"},
-    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",emoji:"🏞️",bg:"linear-gradient(135deg,#1a2e1e,#284a30,#3a603e,#142018)",wiki:"Summer_Palace"},
-    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",emoji:"🏔️",bg:"linear-gradient(135deg,#1c2418,#2c3a26,#3c4e34,#141c10)",wiki:"Great_Wall_of_China"},
-    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",emoji:"🏘️",bg:"linear-gradient(135deg,#201a14,#302418,#3e2e1c,#181008)",wiki:"Yanqing_District"}
+var RS=[
+  {id:"bj",name:"北京精华游",emoji:"🏯",color:"#e89840",ch:"#e89840",ct:[39.92,116.41],zm:12,info:"三天五步 · 古都之心 · 约48 km",
+   ss:[
+    {t:"天安门广场",l:"东城区",la:39.906,ln:116.398,d:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",e:"🏛️",bg:"linear-gradient(135deg,#3a2018,#5a3020,#4a2818,#221008)",p:"Tiananmen_Gate.jpg"},
+    {t:"故宫",l:"东城区",la:39.918,ln:116.397,d:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",e:"🏯",bg:"linear-gradient(135deg,#3a1a10,#5a2818,#4a2014,#201008)",p:"Forbidden_City_Beijing_China_2019.jpg"},
+    {t:"天坛公园",l:"东城区",la:39.882,ln:116.407,d:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",e:"🛕",bg:"linear-gradient(135deg,#182838,#243850,#2e4260,#101c28)",p:"Temple_of_Heaven_Beijing_China.jpg"},
+    {t:"颐和园",l:"海淀区",la:39.996,ln:116.287,d:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",e:"🏞️",bg:"linear-gradient(135deg,#1a2e1e,#284a30,#3a603e,#142018)",p:"Summer_Palace_Beijing_China.jpg"},
+    {t:"八达岭长城",l:"延庆区",la:40.358,ln:116.020,d:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",e:"🏔️",bg:"linear-gradient(135deg,#1c2418,#2c3a26,#3c4e34,#141c10)",p:"Great_Wall_of_China_at_Badaling.jpg"},
+    {t:"延庆柳沟古镇",l:"延庆区",la:40.463,ln:115.975,d:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",e:"🏘️",bg:"linear-gradient(135deg,#201a14,#302418,#3e2e1c,#181008)",p:""}
   ]},
-  {id:"shanghai",name:"上海魔都漫步",emoji:"🏙️",color:"#e06060",colorHex:"#e06060",center:[31.240,121.480],zoom:12,info:"一日浮光 · 浦西到浦东 · 约15 km",
-   stops:[
-    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",emoji:"🌃",bg:"linear-gradient(135deg,#181a30,#242a48,#2e3860,#101420)",wiki:"The_Bund"},
-    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",emoji:"🛍️",bg:"linear-gradient(135deg,#281822,#3c2634,#4e3442,#1c1018)",wiki:"Nanjing_Road"},
-    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",emoji:"🍸",bg:"linear-gradient(135deg,#221826,#342638,#46344c,#181020)",wiki:"Xintiandi"},
-    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",emoji:"🏢",bg:"linear-gradient(135deg,#181e30,#242c48,#2e3a5c,#101420)",wiki:"Lujiazui"}
+  {id:"sh",name:"上海魔都漫步",emoji:"🏙️",color:"#e06060",ch:"#e06060",ct:[31.24,121.48],zm:12,info:"一日浮光 · 浦西到浦东 · 约15 km",
+   ss:[
+    {t:"外滩",l:"黄浦区",la:31.240,ln:121.490,d:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",e:"🌃",bg:"linear-gradient(135deg,#181a30,#242a48,#2e3860,#101420)",p:"The_Bund_Shanghai.jpg"},
+    {t:"南京路步行街",l:"黄浦区",la:31.233,ln:121.475,d:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",e:"🛍️",bg:"linear-gradient(135deg,#281822,#3c2634,#4e3442,#1c1018)",p:"Nanjing_Road_Shanghai.jpg"},
+    {t:"新天地",l:"黄浦区",la:31.220,ln:121.474,d:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",e:"🍸",bg:"linear-gradient(135deg,#221826,#342638,#46344c,#181020)",p:"Xintiandi_Shanghai.jpg"},
+    {t:"陆家嘴",l:"浦东新区",la:31.239,ln:121.500,d:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",e:"🏢",bg:"linear-gradient(135deg,#181e30,#242c48,#2e3a5c,#101420)",p:"Pudong_Skyline_Shanghai.jpg"}
   ]},
-  {id:"xian",name:"西安古城寻踪",emoji:"🏛️",color:"#60a870",colorHex:"#60a870",center:[34.280,108.960],zoom:12,info:"两日穿越 · 周秦汉唐 · 约30 km",
-   stops:[
-    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",emoji:"🗿",bg:"linear-gradient(135deg,#221e16,#342c20,#443828,#161208)",wiki:"Terracotta_Army"},
-    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",emoji:"🔔",bg:"linear-gradient(135deg,#1c2618,#2a3624,#384830,#141c10)",wiki:"Bell_Tower_of_Xi'an"},
-    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",emoji:"🍜",bg:"linear-gradient(135deg,#2a1e16,#3c2c1e,#4e3828,#1c120a)",wiki:"Muslim_Quarter,_Xi'an"},
-    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",emoji:"🛕",bg:"linear-gradient(135deg,#1a2216,#283420,#364428,#141a0e)",wiki:"Giant_Wild_Goose_Pagoda"}
+  {id:"xa",name:"西安古城寻踪",emoji:"🏛️",color:"#60a870",ch:"#60a870",ct:[34.28,108.96],zm:12,info:"两日穿越 · 周秦汉唐 · 约30 km",
+   ss:[
+    {t:"兵马俑",l:"临潼区",la:34.385,ln:109.273,d:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",e:"🗿",bg:"linear-gradient(135deg,#221e16,#342c20,#443828,#161208)",p:"Terracotta_Army_Xian.jpg"},
+    {t:"钟楼",l:"碑林区",la:34.261,ln:108.942,d:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",e:"🔔",bg:"linear-gradient(135deg,#1c2618,#2a3624,#384830,#141c10)",p:"Bell_Tower_of_Xian.jpg"},
+    {t:"回民街",l:"碑林区",la:34.263,ln:108.946,d:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",e:"🍜",bg:"linear-gradient(135deg,#2a1e16,#3c2c1e,#4e3828,#1c120a)",p:"Muslim_Quarter_Xian.jpg"},
+    {t:"大雁塔",l:"雁塔区",la:34.219,ln:108.960,d:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",e:"🛕",bg:"linear-gradient(135deg,#1a2216,#283420,#364428,#141a0e)",p:"Giant_Wild_Goose_Pagoda_Xian.jpg"}
   ]}
 ];
-var cur,activeStop=-1,markers=[],lines=[],glows=[],step=-1,playing=false,timer=null,currentLayer=0,tileLayer=null,photoTimer=null,lastPhotoUrl="";
+var cur,as=-1,mks=[],lns=[],gls=[],step=-1,playing=false,tmr=null,cl=0,tl=null;
 var map=L.map("map",{center:[39.92,116.40],zoom:12,minZoom:3,zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:0,wheelPxPerZoomLevel:120,worldCopyJump:true});
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
-function setTile(index){currentLayer=index;if(tileLayer)map.removeLayer(tileLayer);var p=tileProviders[index],opts={maxZoom:19,attribution:p.attr};if(p.subdomains)opts.subdomains=p.subdomains.split("");tileLayer=L.tileLayer(p.src,opts).addTo(map);document.querySelectorAll(".layer-btn").forEach(function(b,i){b.classList.toggle("active",i===index)})}
-var lc=document.getElementById("layerCtrl");tileProviders.forEach(function(p,i){var b=document.createElement("button");b.className="layer-btn"+(i===0?" active":"");b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;b.onclick=function(){setTile(i)};lc.appendChild(b)});setTile(0);
-function stopIcon(i,isA){var r=isA?40:32,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]})}
+function setTile(i){cl=i;if(tl)map.removeLayer(tl);var p=TP[i],o={maxZoom:19,attribution:p.attr};if(p.sub)o.subdomains=p.sub.split("");tl=L.tileLayer(p.src,o).addTo(map);document.querySelectorAll(".layer-btn").forEach(function(b,j){b.classList.toggle("active",j===i)})}
+var lc=document.getElementById("layerCtrl");TP.forEach(function(p,i){var b=document.createElement("button");b.className="layer-btn"+(i===0?" active":"");b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;b.onclick=function(){setTile(i)};lc.appendChild(b)});setTile(0);
+function mkIcon(i,isA){var r=isA?40:32,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]})}
 
-function showLandmark(stop){
-  var photo=document.getElementById("bannerPhoto"),grad=document.getElementById("bannerGradient"),loader=document.getElementById("photoLoader"),title=document.getElementById("bannerTitle"),loc=document.getElementById("bannerLoc"),emoji=document.getElementById("bannerEmoji");
-  title.textContent=stop.title;loc.textContent=stop.location;emoji.textContent=stop.emoji||"📍";
-  grad.style.background=stop.bg;
-  photo.classList.remove("show");photo.style.backgroundImage="";
-  if(lastPhotoUrl)URL.revokeObjectURL(lastPhotoUrl);lastPhotoUrl="";
-  clearTimeout(photoTimer);
-  if(!stop.wiki)return;
-  var apiUrl="https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(stop.wiki);
-  loader.classList.add("show");
-  fetch(apiUrl).then(function(r){if(!r.ok)throw new Error("404");return r.json()}).then(function(data){
-    var src=data.thumbnail?data.thumbnail.source:null;
-    if(!src){photo.classList.remove("show");loader.classList.remove("show");return}
-    var img=new Image();
-    img.onload=function(){photo.style.backgroundImage="url("+src+")";photo.classList.add("show");loader.classList.remove("show")};
-    img.onerror=function(){loader.classList.remove("show")};
-    img.src=src;
-  }).catch(function(){loader.classList.remove("show")});
-  photoTimer=setTimeout(function(){loader.classList.remove("show")},10000);
+function showBanner(s){
+  var img=document.getElementById("bannerImg"),grad=document.getElementById("bannerGrad"),spin=document.getElementById("bannerSpin"),ti=document.getElementById("bannerTitle"),lo=document.getElementById("bannerLoc"),em=document.getElementById("bannerEmoji");
+  ti.textContent=s.t;lo.textContent=s.l;em.textContent=s.e||"📍";
+  grad.style.background=s.bg;
+  grad.className="bg-gradient";
+  img.className="bg-img";
+  img.style.backgroundImage="";
+  if(!s.p){console.log("no photo for "+s.t);return}
+  var url="https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(s.p)+"?width=800";
+  console.log("loading: "+url);
+  spin.style.display="block";
+  var pre=new Image();
+  pre.onload=function(){
+    console.log("loaded: "+s.p);
+    img.style.backgroundImage="url("+url+")";
+    img.className="bg-img on";
+    grad.className="bg-gradient off";
+    spin.style.display="none";
+  };
+  pre.onerror=function(){
+    console.log("failed: "+s.p);
+    spin.style.display="none";
+  };
+  pre.src=url;
+  setTimeout(function(){if(spin.style.display!=="none"){spin.style.display="none";console.log("timeout: "+s.p)}},10000);
 }
 function select(id){
-  activeStop=-1;cur=routes.find(function(r){return r.id===id});
+  as=-1;cur=RS.find(function(r){return r.id===id});
   document.querySelectorAll(".chip").forEach(function(c){c.classList.toggle("active",c.id==="chip-"+id)});
   document.getElementById("routeName").textContent=cur.name;document.getElementById("routeInfo").textContent=cur.info;
-  renderItinerary();renderMap();
-  map.setView(cur.center,cur.zoom,{animate:true,duration:1});
-  updateInfo();showLandmark(cur.stops[0]);
+  renderTL();renderMap();
+  map.setView(cur.ct,cur.zm,{animate:true,duration:1});
+  upInfo();showBanner(cur.ss[0]);
 }
-function renderItinerary(){var el=document.getElementById("itinerary");el.innerHTML="";if(!cur)return;cur.stops.forEach(function(s,i){var d=document.createElement("div");d.className="stop-item";d.id="stop-"+i;d.innerHTML='<span class="stop-num">'+(i+1)+'</span><div class="stop-title">'+s.title+'</div><div class="stop-loc">'+s.location+'</div>'+(s.desc?'<div class="stop-desc">'+s.desc+'</div>':"")+(s.tip?'<div class="stop-tip">'+s.tip+'</div>':"");d.onclick=function(){gotoStop(i)};el.appendChild(d)})}
-function renderMap(){markers.forEach(function(m){map.removeLayer(m)});lines.forEach(function(l){map.removeLayer(l)});glows.forEach(function(g){map.removeLayer(g)});markers=[];lines=[];glows=[];if(!cur)return;var coords=cur.stops.map(function(s){return[s.lat,s.lng]});for(var i=0;i<coords.length-1;i++){(function(p1,p2){var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;var ctrl=[mlat+Math.min(1.5,.3/Math.abs(p2[0]-p1[0]||.01)),mlng+(Math.random()-.5)*2];var pts=[];for(var j=0;j<=50;j++){var t=j/50;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}glows.push(L.polyline(pts,{color:cur.colorHex,weight:6,opacity:.3,interactive:false,className:"route-line-glow"}).addTo(map));lines.push(L.polyline(pts,{color:"#ffffff",weight:3,opacity:.8,dashArray:"12 8",interactive:false,className:"route-line-dash"}).addTo(map))})(coords[i],coords[i+1])}cur.stops.forEach(function(s,i){var a=i===activeStop;var m=L.marker([s.lat,s.lng],{icon:stopIcon(i,a)}).addTo(map);m.bindPopup('<div class="popup-inner"><div class="popup-title">📍 '+s.title+'</div><div class="popup-meta">'+s.location+(s.tip?' · '+s.tip:"")+'</div>'+(s.desc?'<div class="popup-desc">'+s.desc+'</div>':"")+'</div>',{maxWidth:300,closeButton:true,className:"custom-popup"});m.on("click",function(){gotoStop(i)});markers.push(m)})}
-function gotoStop(i){if(!cur||i<0||i>=cur.stops.length)return;activeStop=i;var s=cur.stops[i];document.querySelectorAll(".stop-item").forEach(function(el,j){el.classList.toggle("active",j===i)});var si=document.getElementById("stop-"+i);if(si)si.scrollIntoView({behavior:"smooth",block:"center"});markers.forEach(function(m,j){m.setIcon(stopIcon(j,j===i));if(j===i)m.bringToFront()});map.flyTo([s.lat,s.lng],15,{duration:1.2,easeLinearity:.25});step=i;updateInfo();showLandmark(s);var toast=document.getElementById("mapToast");toast.textContent=s.emoji+" "+s.title;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},2800)}
-function updateInfo(){if(!cur){document.getElementById("playInfo").textContent="0/0";return}document.getElementById("playInfo").textContent=(step+1)+"/"+cur.stops.length}
-function start(){if(!cur)return;if(step>=cur.stops.length-1)step=-1;playing=true;document.getElementById("btnPlay").textContent="⏸";document.getElementById("btnPlay").classList.add("playing");advance()}
-function stop(){playing=false;if(timer)clearTimeout(timer);timer=null;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing")}
-function advance(){if(!playing)return;var n=step+1;if(n>=cur.stops.length){stop();return}gotoStop(n);timer=setTimeout(advance,3000)}
-document.getElementById("btnPrev").onclick=function(){stop();if(cur&&step>0)gotoStop(step-1)};
-document.getElementById("btnNext").onclick=function(){stop();if(cur&&step<cur.stops.length-1)gotoStop(step+1)};
+function renderTL(){var el=document.getElementById("itinerary");el.innerHTML="";if(!cur)return;cur.ss.forEach(function(s,i){var d=document.createElement("div");d.className="stop-item";d.id="stop-"+i;d.innerHTML='<span class="stop-num">'+(i+1)+'</span><div class="stop-title">'+s.t+'</div><div class="stop-loc">'+s.l+'</div>'+(s.d?'<div class="stop-desc">'+s.d+'</div>':"")+(s.tip?'<div class="stop-tip">'+s.tip+'</div>':"");d.onclick=function(){toStop(i)};el.appendChild(d)})}
+function renderMap(){mks.forEach(function(m){map.removeLayer(m)});lns.forEach(function(l){map.removeLayer(l)});gls.forEach(function(g){map.removeLayer(g)});mks=[];lns=[];gls=[];if(!cur)return;var cs=cur.ss.map(function(s){return[s.la,s.ln]});for(var i=0;i<cs.length-1;i++){(function(p1,p2){var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;var ctrl=[mlat+Math.min(1.5,.3/Math.abs(p2[0]-p1[0]||.01)),mlng+(Math.random()-.5)*2];var pts=[];for(var j=0;j<=50;j++){var t=j/50;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}gls.push(L.polyline(pts,{color:cur.ch,weight:6,opacity:.3,interactive:false,className:"route-line-glow"}).addTo(map));lns.push(L.polyline(pts,{color:"#ffffff",weight:3,opacity:.8,dashArray:"12 8",interactive:false,className:"route-line-dash"}).addTo(map))})(cs[i],cs[i+1])}cur.ss.forEach(function(s,i){var a=i===as;var m=L.marker([s.la,s.ln],{icon:mkIcon(i,a)}).addTo(map);m.bindPopup('<div class="popup-inner"><div class="popup-title">📍 '+s.t+'</div><div class="popup-meta">'+s.l+(s.tip?' · '+s.tip:"")+'</div>'+(s.d?'<div class="popup-desc">'+s.d+'</div>':"")+'</div>',{maxWidth:300,closeButton:true,className:"custom-popup"});m.on("click",function(){toStop(i)});mks.push(m)})}
+function toStop(i){if(!cur||i<0||i>=cur.ss.length)return;as=i;var s=cur.ss[i];document.querySelectorAll(".stop-item").forEach(function(el,j){el.classList.toggle("active",j===i)});var si=document.getElementById("stop-"+i);if(si)si.scrollIntoView({behavior:"smooth",block:"center"});mks.forEach(function(m,j){m.setIcon(mkIcon(j,j===i));if(j===i)m.bringToFront()});map.flyTo([s.la,s.ln],15,{duration:1.2,easeLinearity:.25});step=i;upInfo();showBanner(s);var toast=document.getElementById("mapToast");toast.textContent=s.e+" "+s.t;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},2800)}
+function upInfo(){if(!cur){document.getElementById("playInfo").textContent="0/0";return}document.getElementById("playInfo").textContent=(step+1)+"/"+cur.ss.length}
+function start(){if(!cur)return;if(step>=cur.ss.length-1)step=-1;playing=true;document.getElementById("btnPlay").textContent="⏸";document.getElementById("btnPlay").classList.add("playing");advance()}
+function stop(){playing=false;if(tmr)clearTimeout(tmr);tmr=null;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing")}
+function advance(){if(!playing)return;var n=step+1;if(n>=cur.ss.length){stop();return}toStop(n);tmr=setTimeout(advance,3000)}
+document.getElementById("btnPrev").onclick=function(){stop();if(cur&&step>0)toStop(step-1)};
+document.getElementById("btnNext").onclick=function(){stop();if(cur&&step<cur.ss.length-1)toStop(step+1)};
 document.getElementById("btnPlay").onclick=function(){playing?stop():start()};
-document.addEventListener("keydown",function(ev){if(!cur)return;if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.stops.length-1)gotoStop(step+1)}if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)gotoStop(step-1)}if(ev.key===" "){ev.preventDefault();playing?stop():start()}});
-var rb=document.getElementById("routeBar");routes.forEach(function(r){var c=document.createElement("div");c.className="chip";c.id="chip-"+r.id;c.innerHTML='<div class="dot" style="background:'+r.color+'">'+r.emoji+'</div>'+r.name;c.onclick=function(){stop();select(r.id)};rb.appendChild(c)});
-select("beijing");
+document.addEventListener("keydown",function(ev){if(!cur)return;if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.ss.length-1)toStop(step+1)}if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)toStop(step-1)}if(ev.key===" "){ev.preventDefault();playing?stop():start()}});
+var rb=document.getElementById("routeBar");RS.forEach(function(r){var c=document.createElement("div");c.className="chip";c.id="chip-"+r.id;c.innerHTML='<div class="dot" style="background:'+r.color+'">'+r.emoji+'</div>'+r.name;c.onclick=function(){stop();select(r.id)};rb.appendChild(c)});
+select("bj");
 setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
 </body>
