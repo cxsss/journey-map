@@ -4,90 +4,96 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>旅游路线 · 轨迹地图</title>
-<meta name="theme-color" content="#0a0a12">
+<meta name="theme-color" content="#0d0a06">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-:root{--bg:#141009;--surface:#1e1812;--surface-2:#261f17;--border:rgba(180,150,110,.08);--border-strong:rgba(180,150,110,.14);--text:#e8dfd2;--text-2:#a89880;--text-3:#7a6b58;--gold:#d4a44c;--gold-soft:rgba(212,164,76,.12);--gold-border:#c4963e;--charcoal:#3a3226;--amber:#e0b84c}
+:root{--bg:#0d0a06;--surface:#18130d;--surface-2:#201912;--border:rgba(160,130,90,.1);--border-strong:rgba(160,130,90,.16);--text:#e8dfd2;--text-2:#a89880;--text-3:#6b5d4a;--gold:#d4a44c;--gold-soft:rgba(212,164,76,.1);--gold-border:#b8893a;--amber:#e8c050;--accent-beijing:#e89840;--accent-shanghai:#e06060;--accent-xian:#60a870}
 body{font-family:"Urbanist","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
-body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3);min-width:40px;min-height:40px}
-.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3)}
+.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s ease}
 .app-loading.hide{opacity:0;pointer-events:none}
 .loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.topbar{display:flex;align-items:center;padding:10px 20px;gap:6px;background:rgba(20,16,9,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative}
+.topbar{display:flex;align-items:center;padding:10px 20px;gap:6px;background:rgba(13,10,6,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative}
 .topbar::-webkit-scrollbar{height:0}
-.chip{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all .4s;font-size:13px;font-weight:400;color:var(--text-2);flex-shrink:0}
+.chip{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all .4s;font-size:13px;font-weight:500;color:var(--text-2);flex-shrink:0}
 .chip:hover{border-color:var(--border-strong);color:var(--text)}
-.chip.active{background:var(--gold-soft);border-color:rgba(212,164,76,.2);color:var(--gold)}
+.chip.active{background:var(--gold-soft);border-color:rgba(212,164,76,.25);color:var(--gold)}
 .chip .dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .main{display:flex;flex:1;overflow:hidden;position:relative}
-.sidebar{width:350px;min-width:350px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
-.sidebar-head{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
-.sidebar-head .kicker{font-size:10px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:2px}
-.sidebar-head h2{font-family:"Noto Serif SC",serif;font-size:17px;font-weight:700;color:#dcc8a8}
-.sidebar-head .info{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.4}
-.itinerary{flex:1;overflow-y:auto;padding:8px 12px 12px 18px;scroll-behavior:smooth}
-.stop-item{position:relative;padding:12px 0 12px 28px;cursor:pointer;border-radius:8px;margin:1px 0;transition:all .4s}
-.stop-item:hover{background:rgba(180,150,110,.03)}
+.sidebar{width:360px;min-width:360px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
+.sidebar-head{padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.sidebar-head .kicker{font-size:9px;font-weight:700;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+.sidebar-head h2{font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;color:#dcc8a8;letter-spacing:1px}
+.sidebar-head .info{font-size:11px;color:var(--text-3);margin-top:4px}
+.itinerary{flex:1;overflow-y:auto;padding:6px 14px 14px 20px;scroll-behavior:smooth}
+.stop-item{position:relative;padding:13px 0 13px 30px;cursor:pointer;border-radius:10px;margin:1px 0;transition:all .35s}
+.stop-item:hover{background:rgba(160,130,90,.04)}
 .stop-item.active{background:var(--gold-soft)}
-.stop-item::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:1px;background:var(--border)}
-.stop-item:first-child::before{top:20px}
-.stop-item:last-child::before{bottom:calc(100% - 20px)}
-.stop-item::after{content:"";position:absolute;left:2px;top:18px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:2px solid var(--border-strong);transition:all .4s;z-index:1}
-.stop-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(212,164,76,.45);transform:scale(1.25)}
-.stop-num{position:absolute;left:0;top:14px;font-size:8px;font-weight:700;color:var(--text-3);width:16px;text-align:center;z-index:2;background:var(--surface);line-height:16px;border-radius:50%}
+.stop-item::before{content:"";position:absolute;left:9px;top:0;bottom:0;width:1px;background:var(--border)}
+.stop-item:first-child::before{top:22px}
+.stop-item:last-child::before{bottom:calc(100% - 22px)}
+.stop-item::after{content:"";position:absolute;left:3px;top:18px;width:13px;height:13px;border-radius:50%;background:var(--surface);border:2px solid var(--border-strong);transition:all .35s;z-index:1}
+.stop-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(212,164,76,.5);transform:scale(1.2)}
+.stop-num{position:absolute;left:0;top:14px;font-size:8px;font-weight:700;color:var(--text-3);width:18px;text-align:center;z-index:2;background:var(--surface);line-height:18px;border-radius:50%}
 .stop-item.active .stop-num{color:var(--bg);background:transparent}
-.stop-title{font-size:13px;font-weight:500;line-height:1.4}
-.stop-loc{font-size:11px;color:var(--text-2);margin-top:2px}
-.stop-tip{font-size:10px;color:var(--amber);margin-top:4px;padding:4px 8px;border-radius:8px;background:rgba(224,184,76,.06);display:inline-block}
-.stop-desc{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.4}
+.stop-title{font-size:13px;font-weight:600;line-height:1.3}
+.stop-loc{font-size:11px;color:var(--text-2);margin-top:1px}
+.stop-tip{font-size:10px;color:var(--amber);margin-top:5px;padding:4px 8px;border-radius:8px;background:rgba(224,184,76,.07);display:inline-block}
+.stop-desc{font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.5}
 .map-area{flex:1;position:relative}
-.landmark-banner{position:absolute;top:0;left:0;right:0;height:180px;z-index:3;overflow:hidden;border-bottom:1px solid var(--border);transition:background .8s ease}
-.landmark-banner .banner-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .5s ease}
-.landmark-banner .banner-emoji{font-size:64px;filter:drop-shadow(0 0 20px rgba(255,255,255,.25)) drop-shadow(0 4px 16px rgba(0,0,0,.5));transition:transform .6s cubic-bezier(.34,1.56,.64,1);line-height:1}
-.landmark-banner .banner-emoji.pop{transform:scale(1.18)}
-.landmark-banner .banner-subtitle{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
-.landmark-banner .landmark-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,16,9,.85) 0%,rgba(20,16,9,.35) 55%,rgba(20,16,9,.08) 100%);pointer-events:none}
-.landmark-banner .landmark-label{position:absolute;bottom:12px;left:16px;font-family:"Noto Serif SC",serif;font-size:20px;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6);pointer-events:none;transition:all .5s}
-.landmark-banner .landmark-pattern{position:absolute;inset:0;opacity:.04;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-#map{margin-top:180px;height:calc(100% - 180px);width:100%;background:var(--bg)}
-.map-overlay{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:8px;background:rgba(20,16,9,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:5px 10px;border-radius:22px;border:1px solid var(--border);pointer-events:auto}
+.landmark-banner{position:absolute;top:0;left:0;right:0;height:200px;z-index:3;overflow:hidden;border-bottom:1px solid var(--border)}
+.landmark-banner .bg-layer{position:absolute;inset:0;transition:opacity .8s ease}
+.landmark-banner .bg-photo{background-size:cover;background-position:center}
+.landmark-banner .bg-gradient{opacity:0}
+.landmark-banner.no-photo .bg-photo{opacity:0}
+.landmark-banner.no-photo .bg-gradient{opacity:1}
+.landmark-banner .banner-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,10,6,.92) 0%,rgba(13,10,6,.4) 50%,rgba(13,10,6,.15) 100%)}
+.landmark-banner .banner-frame{position:absolute;inset:0;border:1px solid rgba(255,255,255,.04);margin:8px;border-radius:2px;pointer-events:none}
+.landmark-banner .banner-info{position:absolute;bottom:16px;left:20px;right:20px;display:flex;align-items:flex-end;justify-content:space-between}
+.landmark-banner .banner-title{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);line-height:1.2}
+.landmark-banner .banner-loc{font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:1px}
+.landmark-banner .banner-emoji{font-size:48px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.5));flex-shrink:0;margin-left:12px}
+.landmark-banner .photo-loader{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;animation:spin .6s linear infinite;opacity:0;transition:opacity .3s}
+.landmark-banner .photo-loader.show{opacity:1}
+#map{margin-top:200px;height:calc(100% - 200px);width:100%;background:var(--bg)}
+.map-top{position:absolute;top:212px;left:12px;z-index:5}
+.layer-ctrl{display:flex;gap:3px;background:rgba(13,10,6,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:3px;border-radius:18px;border:1px solid var(--border);flex-wrap:wrap;max-width:148px}
+.layer-btn{width:28px;height:28px;border-radius:50%;border:1px solid transparent;background:rgba(255,255,255,.03);cursor:pointer;font-size:12px;transition:all .35s;display:flex;align-items:center;justify-content:center;padding:0;position:relative;flex-shrink:0}
+.layer-btn:hover{border-color:var(--border-strong)}
+.layer-btn.active{background:var(--gold-soft);border-color:rgba(212,164,76,.25)}
+.layer-btn .tip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%) translateY(2px);font-size:9px;white-space:nowrap;color:var(--text-2);opacity:0;pointer-events:none;transition:all .3s}
+.layer-btn:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+.map-overlay{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:6px;background:rgba(13,10,6,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:5px 10px;border-radius:22px;border:1px solid var(--border);pointer-events:auto}
 .map-ctrl{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .35s;color:var(--text-2);flex-shrink:0}
 .map-ctrl:hover{border-color:var(--border-strong);color:var(--text)}
 .map-ctrl.playing{background:var(--gold-soft);border-color:rgba(212,164,76,.3);color:var(--gold)}
 .map-ctrl:disabled{opacity:.3;cursor:default}
-.map-info{font-size:10px;color:var(--text-2);font-weight:400;min-width:60px;text-align:center}
-.map-top{position:absolute;top:192px;left:12px;z-index:5;display:flex;gap:4px}
-.layer-ctrl{display:flex;gap:3px;background:rgba(20,16,9,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:3px;border-radius:18px;border:1px solid var(--border);flex-wrap:wrap;max-width:148px}
-.layer-btn{width:28px;height:28px;border-radius:50%;border:1px solid transparent;background:rgba(255,255,255,.03);cursor:pointer;font-size:12px;transition:all .35s;display:flex;align-items:center;justify-content:center;padding:0;position:relative;flex-shrink:0}
-.layer-btn:hover{border-color:var(--border-strong)}
-.layer-btn.active{background:var(--gold-soft);border-color:rgba(212,164,76,.2)}
-.layer-btn .tip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%) translateY(2px);font-size:9px;white-space:nowrap;color:var(--text-2);opacity:0;pointer-events:none;transition:all .3s;font-family:inherit;font-weight:400}
-.layer-btn:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);z-index:6;font-size:14px;font-weight:600;background:rgba(20,16,9,.92);border:1px solid rgba(212,164,76,.2);padding:6px 16px;border-radius:16px;pointer-events:none;opacity:0;transition:all .5s;color:var(--gold)}
+.map-info{font-size:10px;color:var(--text-2);font-weight:500;min-width:60px;text-align:center}
+.toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);z-index:6;font-size:14px;font-weight:600;background:rgba(13,10,6,.92);border:1px solid rgba(212,164,76,.25);padding:7px 18px;border-radius:16px;pointer-events:none;opacity:0;transition:all .4s;color:var(--gold)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .route-marker{background:transparent!important;border:none!important}
-.route-marker .marker-body{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--gold-border);box-shadow:0 0 10px rgba(212,175,55,.12),0 2px 8px rgba(0,0,0,.35);transition:all .3s;position:relative}
-.route-marker .marker-body.active{width:38px;height:38px;font-size:14px;border-color:var(--amber);box-shadow:0 0 20px rgba(240,192,64,.3),0 3px 12px rgba(0,0,0,.45)}
-.journey-line-glow{pointer-events:none}
-.journey-line-dash{stroke-dasharray:8 6;animation:dashflow 1s linear infinite;pointer-events:none}
-@keyframes dashflow{to{stroke-dashoffset:-14}}
-.custom-popup .leaflet-popup-content-wrapper{background:rgba(30,24,18,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border-strong);border-radius:10px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.35);padding:0}
-.custom-popup .leaflet-popup-content{margin:12px 16px;font-family:inherit;font-size:13px;line-height:1.5}
+.route-marker .marker-body{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--gold-border);background:rgba(20,15,10,.85);box-shadow:0 0 12px rgba(212,175,55,.1),0 2px 8px rgba(0,0,0,.5);transition:all .3s;position:relative;color:var(--text)}
+.route-marker .marker-body.active{width:40px;height:40px;font-size:14px;border-color:var(--amber);background:rgba(30,20,10,.9);box-shadow:0 0 24px rgba(232,192,80,.35),0 3px 12px rgba(0,0,0,.6)}
+.route-line-glow{pointer-events:none}
+.route-line-dash{stroke-dasharray:10 8;animation:dashflow 1s linear infinite;pointer-events:none}
+@keyframes dashflow{to{stroke-dashoffset:-18}}
+.custom-popup .leaflet-popup-content-wrapper{background:rgba(24,19,13,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border-strong);border-radius:12px;color:var(--text);box-shadow:0 12px 40px rgba(0,0,0,.4);padding:0}
+.custom-popup .leaflet-popup-content{margin:14px 18px;font-family:inherit;font-size:13px;line-height:1.5}
 .custom-popup .leaflet-popup-tip{display:none}
 .custom-popup .leaflet-popup-close-button{color:var(--text-3)!important;font-size:18px!important;font-weight:300;top:6px!important;right:10px!important}
-.popup-title{font-weight:600;font-size:13px;margin-bottom:4px}
+.popup-title{font-weight:600;font-size:14px;margin-bottom:4px;color:var(--gold)}
 .popup-meta{font-size:10px;color:var(--text-3);margin-bottom:6px}
-.popup-desc{font-size:11px;color:var(--text-2)}
-.btn-back{position:absolute;top:192px;right:12px;z-index:5;padding:5px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(20,16,9,.85);color:var(--text-2);font-size:11px;cursor:pointer;font-family:inherit;transition:all .35s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.popup-desc{font-size:11px;color:var(--text-2);line-height:1.5}
+.btn-back{position:absolute;top:212px;right:12px;z-index:5;padding:5px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(13,10,6,.88);color:var(--text-2);font-size:11px;cursor:pointer;font-family:inherit;transition:all .35s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .btn-back:hover{border-color:var(--border-strong);color:var(--text)}
-@media(max-width:768px){.sidebar{width:260px;min-width:260px}.landmark-banner{height:140px}#map{margin-top:140px;height:calc(100% - 140px)}.map-top{top:152px}.btn-back{top:152px}.landmark-banner .banner-emoji{font-size:46px}}
+@media(max-width:768px){.sidebar{width:260px;min-width:260px}.landmark-banner{height:150px}#map{margin-top:150px;height:calc(100% - 150px)}.map-top{top:162px}.btn-back{top:162px}.banner-title{font-size:17px}.banner-emoji{font-size:36px}}
 </style>
 </head>
 <body>
@@ -103,14 +109,19 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 <div class="itinerary" id="itinerary"></div>
 </div>
 <div class="map-area">
-<div class="landmark-banner" id="landmarkBanner" style="background:linear-gradient(135deg,#1a1410 0%,#2a1f14 30%,#3a2a18 60%,#1a1410 100%)">
-<div class="landmark-pattern"></div>
-<div class="banner-content" id="bannerContent">
-<div class="banner-emoji" id="bannerEmoji">🏛️</div>
-<div class="banner-subtitle" id="bannerSubtitle"></div>
+<div class="landmark-banner" id="landmarkBanner">
+<div class="bg-layer bg-photo" id="bannerPhoto"></div>
+<div class="bg-layer bg-gradient" id="bannerGradient" style="background:linear-gradient(135deg,#1a1410,#2a1f14,#3a2a18,#1a1410)"></div>
+<div class="photo-loader" id="photoLoader"></div>
+<div class="banner-overlay"></div>
+<div class="banner-frame"></div>
+<div class="banner-info">
+<div>
+<div class="banner-title" id="bannerTitle"></div>
+<div class="banner-loc" id="bannerLoc"></div>
 </div>
-<div class="landmark-shade"></div>
-<div class="landmark-label" id="landmarkLabel"></div>
+<div class="banner-emoji" id="bannerEmoji">🏛️</div>
+</div>
 </div>
 <div id="map"></div>
 <div class="map-top">
@@ -134,32 +145,35 @@ var tileProviders=[
   {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
   {name:"街道",icon:"🏙️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
 ];
+
+function photoUrl(title){return"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(title)+"?width=800"}
+
 var routes=[
-  {id:"beijing",name:"北京精华游",emoji:"🏯",color:"#f0a030",colorHex:"#f0a030",center:[39.920,116.410],zoom:12,
+  {id:"beijing",name:"北京精华游",emoji:"🏯",color:"#e89840",colorHex:"#e89840",center:[39.920,116.410],zoom:12,
    info:"三天五步 · 古都之心 · 约48 km",
    stops:[
-    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",emoji:"🏛️",bg:["#4a2820","#6a3428","#5a2c20","#2a1812"]},
-    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",emoji:"🏯",bg:["#4a2818","#6a3420","#8a4028","#2a1a10"]},
-    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",emoji:"🛕",bg:["#182838","#223450","#2e4260","#101c28"]},
-    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",emoji:"🏞️",bg:["#1a3020","#284830","#385c40","#142018"]},
-    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",emoji:"🏔️",bg:["#1a241c","#2a382c","#3a4c3c","#121810"]},
-    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",emoji:"🏘️",bg:["#201c18","#302820","#403428","#181410"]}
+    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",emoji:"🏛️",bg:"linear-gradient(135deg,#3a2018,#5a3020,#4a2818,#221008)",photo:"Tiananmen_Gate.jpg"},
+    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",emoji:"🏯",bg:"linear-gradient(135deg,#3a1a10,#5a2818,#4a2014,#201008)",photo:"Forbidden_City_Beijing_View.jpg"},
+    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",emoji:"🛕",bg:"linear-gradient(135deg,#182838,#243850,#2e4260,#101c28)",photo:"Hall_of_Prayer_for_Good_Harvests.JPG"},
+    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",emoji:"🏞️",bg:"linear-gradient(135deg,#1a2e1e,#284a30,#3a603e,#142018)",photo:"Summer_Palace_Beijing_China.jpg"},
+    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",emoji:"🏔️",bg:"linear-gradient(135deg,#1c2418,#2c3a26,#3c4e34,#141c10)",photo:"Great_Wall_of_China_Badaling.jpg"},
+    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",emoji:"🏘️",bg:"linear-gradient(135deg,#201a14,#302418,#3e2e1c,#181008)",photo:"Gubei_Water_Town_China.jpg"}
   ]},
-  {id:"shanghai",name:"上海魔都漫步",emoji:"🏙️",color:"#e05050",colorHex:"#e05050",center:[31.240,121.480],zoom:12,
+  {id:"shanghai",name:"上海魔都漫步",emoji:"🏙️",color:"#e06060",colorHex:"#e06060",center:[31.240,121.480],zoom:12,
    info:"一日浮光 · 浦西到浦东 · 约15 km",
    stops:[
-    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",emoji:"🌃",bg:["#181a30","#222848","#2c3660","#101420"]},
-    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",emoji:"🛍️",bg:["#2a1824","#3c2434","#4e3040","#1c1018"]},
-    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",emoji:"🍸",bg:["#241828","#34203c","#442c50","#181020"]},
-    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",emoji:"🏢",bg:["#182032","#223048","#2c3e5c","#101420"]}
+    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",emoji:"🌃",bg:"linear-gradient(135deg,#181a30,#242a48,#2e3860,#101420)",photo:"The_Bund_Shanghai.jpg"},
+    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",emoji:"🛍️",bg:"linear-gradient(135deg,#281822,#3c2634,#4e3442,#1c1018)",photo:"Nanjing_Road_Shanghai.jpg"},
+    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",emoji:"🍸",bg:"linear-gradient(135deg,#221826,#342638,#46344c,#181020)",photo:"Xintiandi_Shanghai.jpg"},
+    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",emoji:"🏢",bg:"linear-gradient(135deg,#181e30,#242c48,#2e3a5c,#101420)",photo:"Shanghai_Skyline_Pudong.jpg"}
   ]},
-  {id:"xian",name:"西安古城寻踪",emoji:"🏛️",color:"#50b070",colorHex:"#50b070",center:[34.280,108.960],zoom:12,
+  {id:"xian",name:"西安古城寻踪",emoji:"🏛️",color:"#60a870",colorHex:"#60a870",center:[34.280,108.960],zoom:12,
    info:"两日穿越 · 周秦汉唐 · 约30 km",
    stops:[
-    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",emoji:"🗿",bg:["#242018","#342c20","#443828","#181410"]},
-    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",emoji:"🔔",bg:["#1c2818","#2a3824","#384830","#141c10"]},
-    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",emoji:"🍜",bg:["#2c2018","#402c20","#503828","#1c1410"]},
-    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",emoji:"🛕",bg:["#1a2418","#283420","#344428","#141810"]}
+    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",emoji:"🗿",bg:"linear-gradient(135deg,#221e16,#342c20,#443828,#161208)",photo:"Terracotta_Army_Xian.jpg"},
+    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",emoji:"🔔",bg:"linear-gradient(135deg,#1c2618,#2a3624,#384830,#141c10)",photo:"Bell_Tower_of_Xian.jpg"},
+    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",emoji:"🍜",bg:"linear-gradient(135deg,#2a1e16,#3c2c1e,#4e3828,#1c120a)",photo:"Muslim_Quarter_Xian.jpg"},
+    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",emoji:"🛕",bg:"linear-gradient(135deg,#1a2216,#283420,#364428,#141a0e)",photo:"Giant_Wild_Goose_Pagoda_Xian.jpg"}
   ]}
 ];
 var cur,activeStop=-1,markers=[],lines=[],glows=[],step=-1,playing=false,timer=null,currentLayer=0,tileLayer=null;
@@ -167,31 +181,34 @@ var map=L.map("map",{center:[39.92,116.40],zoom:12,minZoom:3,zoomControl:false,a
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
 function setTile(index){
-  currentLayer=index;
-  if(tileLayer)map.removeLayer(tileLayer);
-  var p=tileProviders[index];
-  var opts={maxZoom:19,attribution:p.attr};
+  currentLayer=index;if(tileLayer)map.removeLayer(tileLayer);
+  var p=tileProviders[index],opts={maxZoom:19,attribution:p.attr};
   if(p.subdomains)opts.subdomains=p.subdomains.split("");
   tileLayer=L.tileLayer(p.src,opts).addTo(map);
   document.querySelectorAll(".layer-btn").forEach(function(b,i){b.classList.toggle("active",i===index)});
 }
 var lc=document.getElementById("layerCtrl");
-tileProviders.forEach(function(p,i){
-  var b=document.createElement("button");
-  b.className="layer-btn"+(i===0?" active":"");
-  b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;
-  b.onclick=function(){setTile(i)};
-  lc.appendChild(b);
-});
+tileProviders.forEach(function(p,i){var b=document.createElement("button");b.className="layer-btn"+(i===0?" active":"");b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;b.onclick=function(){setTile(i)};lc.appendChild(b)});
 setTile(0);
-function stopIcon(i,isA){var r=isA?38:30,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});}
+function stopIcon(i,isA){var r=isA?40:32,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});}
 
-function showLandmark(bgArr,label,subtitle,emoji){
-  var banner=document.getElementById("landmarkBanner"),emojiEl=document.getElementById("bannerEmoji"),lbl=document.getElementById("landmarkLabel"),sub=document.getElementById("bannerSubtitle");
-  if(bgArr&&bgArr.length){banner.style.background="linear-gradient(135deg,"+bgArr.join(",")+")"}
-  lbl.textContent=label||"";
-  sub.textContent=subtitle||"";
-  if(emojiEl.textContent!==emoji){emojiEl.textContent=emoji||"🏛️";emojiEl.classList.add("pop");setTimeout(function(){emojiEl.classList.remove("pop")},600)}
+var photoTimer=null;
+function showLandmark(stop){
+  var banner=document.getElementById("landmarkBanner"),photo=document.getElementById("bannerPhoto"),grad=document.getElementById("bannerGradient"),loader=document.getElementById("photoLoader"),title=document.getElementById("bannerTitle"),loc=document.getElementById("bannerLoc"),emoji=document.getElementById("bannerEmoji");
+  title.textContent=stop.title;loc.textContent=stop.location;
+  if(emoji.textContent!==stop.emoji){emoji.textContent=stop.emoji}
+  grad.style.background=stop.bg;
+  banner.classList.add("no-photo");
+  if(stop.photo){
+    var url="https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(stop.photo)+"?width=800";
+    loader.classList.add("show");
+    clearTimeout(photoTimer);
+    var img=new Image();
+    img.onload=function(){photo.style.backgroundImage="url("+url+")";banner.classList.remove("no-photo");loader.classList.remove("show")};
+    img.onerror=function(){loader.classList.remove("show")};
+    img.src=url;
+    photoTimer=setTimeout(function(){loader.classList.remove("show")},8000);
+  }
 }
 function select(id){
   activeStop=-1;cur=routes.find(function(r){return r.id===id});
@@ -200,39 +217,24 @@ function select(id){
   document.getElementById("routeInfo").textContent=cur.info;
   renderItinerary();renderMap();
   map.setView(cur.center,cur.zoom,{animate:true,duration:1});
-  updateInfo();
-  var s=cur.stops[0];showLandmark(s.bg,s.title,s.location,s.emoji);
+  updateInfo();showLandmark(cur.stops[0]);
 }
 function renderItinerary(){
-  var el=document.getElementById("itinerary");el.innerHTML="";
-  if(!cur)return;
-  cur.stops.forEach(function(s,i){
-    var d=document.createElement("div");d.className="stop-item";d.id="stop-"+i;
-    d.innerHTML='<span class="stop-num">'+(i+1)+'</span><div class="stop-title">'+s.title+'</div><div class="stop-loc">'+s.location+'</div>'+(s.desc?'<div class="stop-desc">'+s.desc+'</div>':"")+(s.tip?'<div class="stop-tip">'+s.tip+'</div>':"");
-    d.onclick=function(){gotoStop(i)};el.appendChild(d);
-  });
+  var el=document.getElementById("itinerary");el.innerHTML="";if(!cur)return;
+  cur.stops.forEach(function(s,i){var d=document.createElement("div");d.className="stop-item";d.id="stop-"+i;d.innerHTML='<span class="stop-num">'+(i+1)+'</span><div class="stop-title">'+s.title+'</div><div class="stop-loc">'+s.location+'</div>'+(s.desc?'<div class="stop-desc">'+s.desc+'</div>':"")+(s.tip?'<div class="stop-tip">'+s.tip+'</div>':"");d.onclick=function(){gotoStop(i)};el.appendChild(d)});
 }
 function renderMap(){
-  markers.forEach(function(m){map.removeLayer(m)});
-  lines.forEach(function(l){map.removeLayer(l)});
-  glows.forEach(function(g){map.removeLayer(g)});
+  markers.forEach(function(m){map.removeLayer(m)});lines.forEach(function(l){map.removeLayer(l)});glows.forEach(function(g){map.removeLayer(g)});
   markers=[];lines=[];glows=[];if(!cur)return;
   var coords=cur.stops.map(function(s){return[s.lat,s.lng]});
   for(var i=0;i<coords.length-1;i++){(function(p1,p2){
     var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;
-    var ctrl=[mlat+Math.min(1,.2/Math.abs(p2[0]-p1[0]||.01)),mlng+(Math.random()-.5)*1.5];
-    var pts=[];
-    for(var j=0;j<=40;j++){var t=j/40;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
-    glows.push(L.polyline(pts,{color:cur.colorHex,weight:5,opacity:.25,interactive:false,className:"journey-line-glow"}).addTo(map));
-    lines.push(L.polyline(pts,{color:"#fff",weight:2.5,opacity:.7,dashArray:"10 8",interactive:false,className:"journey-line-dash"}).addTo(map));
+    var ctrl=[mlat+Math.min(1.5,.3/Math.abs(p2[0]-p1[0]||.01)),mlng+(Math.random()-.5)*2];
+    var pts=[];for(var j=0;j<=50;j++){var t=j/50;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
+    glows.push(L.polyline(pts,{color:cur.colorHex,weight:6,opacity:.3,interactive:false,className:"route-line-glow"}).addTo(map));
+    lines.push(L.polyline(pts,{color:"#ffffff",weight:3,opacity:.8,dashArray:"12 8",interactive:false,className:"route-line-dash"}).addTo(map));
   })(coords[i],coords[i+1])}
-  cur.stops.forEach(function(s,i){
-    var a=i===activeStop;
-    var m=L.marker([s.lat,s.lng],{icon:stopIcon(i,a)}).addTo(map);
-    m.bindPopup('<div class="popup-inner"><div class="popup-title">📍 '+s.title+'</div><div class="popup-meta">'+s.location+(s.tip?' · '+s.tip:"")+'</div>'+(s.desc?'<div class="popup-desc">'+s.desc+'</div>':"")+'</div>',{maxWidth:300,closeButton:true,className:"custom-popup"});
-    m.on("click",function(){gotoStop(i)});
-    markers.push(m);
-  });
+  cur.stops.forEach(function(s,i){var a=i===activeStop;var m=L.marker([s.lat,s.lng],{icon:stopIcon(i,a)}).addTo(map);m.bindPopup('<div class="popup-inner"><div class="popup-title">📍 '+s.title+'</div><div class="popup-meta">'+s.location+(s.tip?' · '+s.tip:"")+'</div>'+(s.desc?'<div class="popup-desc">'+s.desc+'</div>':"")+'</div>',{maxWidth:300,closeButton:true,className:"custom-popup"});m.on("click",function(){gotoStop(i)});markers.push(m)});
 }
 function gotoStop(i){
   if(!cur||i<0||i>=cur.stops.length)return;
@@ -240,48 +242,20 @@ function gotoStop(i){
   document.querySelectorAll(".stop-item").forEach(function(el,j){el.classList.toggle("active",j===i)});
   var si=document.getElementById("stop-"+i);if(si)si.scrollIntoView({behavior:"smooth",block:"center"});
   markers.forEach(function(m,j){m.setIcon(stopIcon(j,j===i));if(j===i)m.bringToFront()});
-  map.flyTo([s.lat,s.lng],16,{duration:1.2,easeLinearity:.25});
-  step=i;updateInfo();
-  showLandmark(s.bg,s.title,s.location,s.emoji);
-  var toast=document.getElementById("mapToast");
-  toast.textContent=s.emoji+" "+s.title;
-  toast.classList.add("show");clearTimeout(toast._t);
-  toast._t=setTimeout(function(){toast.classList.remove("show")},3000);
+  map.flyTo([s.lat,s.lng],15,{duration:1.2,easeLinearity:.25});
+  step=i;updateInfo();showLandmark(s);
+  var toast=document.getElementById("mapToast");toast.textContent=s.emoji+" "+s.title;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},2800);
 }
-function updateInfo(){
-  if(!cur){document.getElementById("playInfo").textContent="0/0";return}
-  document.getElementById("playInfo").textContent=(step+1)+"/"+cur.stops.length;
-}
-function start(){
-  if(!cur)return;if(step>=cur.stops.length-1)step=-1;
-  playing=true;document.getElementById("btnPlay").textContent="⏸";
-  document.getElementById("btnPlay").classList.add("playing");advance();
-}
-function stop(){
-  playing=false;if(timer)clearTimeout(timer);timer=null;
-  document.getElementById("btnPlay").textContent="▶";
-  document.getElementById("btnPlay").classList.remove("playing");
-}
-function advance(){
-  if(!playing)return;var n=step+1;
-  if(n>=cur.stops.length){stop();return}
-  gotoStop(n);timer=setTimeout(advance,3000);
-}
+function updateInfo(){if(!cur){document.getElementById("playInfo").textContent="0/0";return}document.getElementById("playInfo").textContent=(step+1)+"/"+cur.stops.length}
+function start(){if(!cur)return;if(step>=cur.stops.length-1)step=-1;playing=true;document.getElementById("btnPlay").textContent="⏸";document.getElementById("btnPlay").classList.add("playing");advance()}
+function stop(){playing=false;if(timer)clearTimeout(timer);timer=null;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing")}
+function advance(){if(!playing)return;var n=step+1;if(n>=cur.stops.length){stop();return}gotoStop(n);timer=setTimeout(advance,3000)}
 document.getElementById("btnPrev").onclick=function(){stop();if(cur&&step>0)gotoStop(step-1)};
 document.getElementById("btnNext").onclick=function(){stop();if(cur&&step<cur.stops.length-1)gotoStop(step+1)};
 document.getElementById("btnPlay").onclick=function(){playing?stop():start()};
-document.addEventListener("keydown",function(ev){
-  if(!cur)return;
-  if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.stops.length-1)gotoStop(step+1)}
-  if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)gotoStop(step-1)}
-  if(ev.key===" "){ev.preventDefault();playing?stop():start()}
-});
+document.addEventListener("keydown",function(ev){if(!cur)return;if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.stops.length-1)gotoStop(step+1)}if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)gotoStop(step-1)}if(ev.key===" "){ev.preventDefault();playing?stop():start()}});
 var rb=document.getElementById("routeBar");
-routes.forEach(function(r){
-  var c=document.createElement("div");c.className="chip";c.id="chip-"+r.id;
-  c.innerHTML='<div class="dot" style="background:'+r.color+'">'+r.emoji+'</div>'+r.name;
-  c.onclick=function(){stop();select(r.id)};rb.appendChild(c);
-});
+routes.forEach(function(r){var c=document.createElement("div");c.className="chip";c.id="chip-"+r.id;c.innerHTML='<div class="dot" style="background:'+r.color+'">'+r.emoji+'</div>'+r.name;c.onclick=function(){stop();select(r.id)};rb.appendChild(c)});
 select("beijing");
 setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
