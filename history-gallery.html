@@ -178,6 +178,7 @@ tileProviders.forEach(function(p,i){
   b.onclick=function(){setTile(i)};
   lc.appendChild(b);
 });
+setTile(0);
 function makeIcon(e,i,col,isA){
   var r=isA?34:26,em=e.icon||"📍",c=isA?"#f0c040":col;
   return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+';box-shadow:0 0 10px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35)">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});

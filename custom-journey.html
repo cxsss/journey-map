@@ -142,6 +142,7 @@ tileProviders.forEach(function(p,i){
   b.onclick=function(){setTile(i)};
   lc.appendChild(b);
 });
+setTile(0);
 var markers=[],polyline;
 function makeIcon(e,i,isA){
   var r=isA?36:28,em=e.icon||"📍",c=isA?"#f0c040":"var(--gold-border)";
