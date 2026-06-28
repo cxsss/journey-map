@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>轨迹地图 · Journey Map</title>
+<style>
+:root{--bg:#f5f0e8;--surface:#faf7f0;--border:#d4c8b0;--text:#3d3226;--text-dim:#8b7a62;--accent:#c0853a;--accent-glow:#d4a354}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Noto Serif SC","STSong","Songti SC","SimSun","Microsoft YaHei",serif;background:var(--bg);background-image:url("data:image/svg+xml,%3Csvg width=''60'' height=''60'' xmlns=''http://www.w3.org/2000/svg''%3E%3Cpath d=''M30 5v50M5 30h50'' stroke=''%23d4c8b0'' stroke-width=''0.5'' opacity=''0.3''/%3E%3C/svg%3E");color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+.hero{text-align:center;margin-bottom:64px}
+.hero .seal{display:inline-block;width:100px;height:100px;border:3px solid var(--accent);border-radius:50%;line-height:100px;font-size:42px;margin-bottom:24px;color:var(--accent);position:relative}
+.hero .seal::before{content:"";position:absolute;inset:-8px;border:1px solid var(--accent);border-radius:50%;opacity:0.4}
+.hero h1{font-size:46px;font-weight:900;letter-spacing:6px;margin-bottom:12px;color:var(--accent);font-family:"Noto Serif SC","STSong","Songti SC",serif}
+.hero p{font-size:16px;color:var(--text-dim);letter-spacing:2px}
+.divider{width:120px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:0 auto 48px}
+.cards{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;max-width:900px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:36px 32px;width:360px;cursor:pointer;transition:all .3s;text-decoration:none;color:var(--text);position:relative;box-shadow:0 2px 12px rgba(61,50,38,0.06)}
+.card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 12px 32px rgba(192,133,58,0.15)}
+.card .card-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.card .icon{font-size:40px}
+.card h2{font-size:22px;font-weight:700;letter-spacing:2px}
+.card p{font-size:14px;color:var(--text-dim);line-height:1.8;margin-bottom:16px}
+.card .features{list-style:none;font-size:13px;color:var(--text-dim)}
+.card .features li{margin-bottom:8px;padding-left:16px;position:relative}
+.card .features li::before{content:"◆";position:absolute;left:0;color:var(--accent);font-size:8px;top:4px}
+.card .tag{display:inline-block;margin-top:14px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1px}
+.card.upload{border-top:3px solid var(--accent)}
+.card.upload .tag{background:rgba(192,133,58,.12);color:var(--accent)}
+.card.history{border-top:3px solid #b85450}
+.card.history .tag{background:rgba(184,84,80,.1);color:#b85450}
+.footer{margin-top:64px;font-size:12px;color:var(--text-dim);text-align:center;line-height:2}
+.footer a{color:var(--accent);text-decoration:none}
+@media(max-width:768px){.hero h1{font-size:32px}.card{width:100%}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="seal">🗺️</div>
+  <h1>轨迹地图</h1>
+  <p>用地图记录每一次出发 · 与每一次相遇</p>
+</div>
+<div class="divider"></div>
+<div class="cards">
+  <a href="custom-journey.html" class="card upload">
+    <div class="card-header">
+      <span class="icon">🧭</span>
+      <h2>自定义历程</h2>
+    </div>
+    <p>上传你的 JSON 数据，绘制属于你自己的生命轨迹。每一个脚印，都是一段故事。</p>
+    <ul class="features">
+      <li>上传 JSON 或粘贴数据</li>
+      <li>实时预览地图轨迹</li>
+      <li>导出、分享你的历程图</li>
+    </ul>
+    <span class="tag">我的历程</span>
+  </a>
+  <a href="history-gallery.html" class="card history">
+    <div class="card-header">
+      <span class="icon">📜</span>
+      <h2>历史长廊</h2>
+    </div>
+    <p>穿越古今中外，在泛黄的古地图上追寻历史的足迹。帝王将相、诗人墨客、科学家与探险家——他们的故事在此交汇。</p>
+    <ul class="features">
+      <li>按时代/地域筛选人物</li>
+      <li>多条历史轨迹对比</li>
+      <li>重大事件时空交汇</li>
+    </ul>
+    <span class="tag">探索历史</span>
+  </a>
+</div>
+<div class="footer">
+  <p>基于 Leaflet · OpenStreetMap · Stamen Design 构建</p>
+  <p>MIT License · 数据可自由替换</p>
+</div>
+</body>
+</html>

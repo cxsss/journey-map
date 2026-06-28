@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>相遇地图 · 人生交汇点</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+:root{--bg:#0a0a12;--surface:#141420;--border:#25253a;--text:#e2e2ed;--text-dim:#7a7a98;--accent:#5b9bd5;--accent-glow:#7bb5f0;--timeline-line:#2a2a42;--card-hover:#1c1c32}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
+
+/* == 侧边栏 == */
+.sidebar{width:420px;min-width:420px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+.sidebar-header{padding:24px 28px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(91,155,213,0.06) 0%,transparent 100%)}
+.sidebar-header h1{font-size:22px;font-weight:700;color:var(--accent-glow)}
+.sidebar-header .subtitle{font-size:12px;color:var(--text-dim);margin-top:4px}
+
+/* 图例 */
+.legend-bar{display:flex;gap:10px;padding:12px 28px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.legend-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:16px;font-size:12px;cursor:pointer;border:2px solid transparent;transition:all .2s;background:rgba(255,255,255,0.03);user-select:none}
+.legend-chip:hover{background:rgba(255,255,255,0.06)}
+.legend-chip .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-chip.active{border-color:var(--accent);background:rgba(91,155,213,0.1)}
+.legend-chip.hidden{opacity:0.35}
+
+/* 时间线 */
+.timeline-container{flex:1;overflow-y:auto;padding:4px 16px 24px 28px;scroll-behavior:smooth}
+.timeline-container::-webkit-scrollbar{width:4px}
+.timeline-container::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.timeline-item{position:relative;padding:14px 0 14px 26px;cursor:pointer;transition:all .2s;border-radius:8px;margin:1px 0}
+.timeline-item:hover,.timeline-item.active{background:var(--card-hover)}
+.timeline-item::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--timeline-line)}
+.timeline-item:first-child::before{top:20px}
+.timeline-item:last-child::before{bottom:calc(100% - 20px)}
+.timeline-item::after{content:'';position:absolute;left:0;top:23px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--border);transition:all .25s;z-index:1}
+.timeline-item.active::after,.timeline-item:hover::after{box-shadow:0 0 8px var(--dot-color,var(--accent))}
+.timeline-item.encounter::after{border-radius:4px;transform:rotate(45deg)}
+.timeline-item.gathering::after{width:16px;height:16px;left:-1px;top:22px;border-radius:50%;border-style:dashed}
+
+.timeline-date{font-size:11px;color:var(--text-dim);margin-bottom:2px;font-family:'SF Mono','Cascadia Code','Consolas',monospace}
+.timeline-title{font-size:15px;font-weight:600;margin-bottom:1px}
+.timeline-meta{font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:6px}
+.timeline-tag{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600}
+
+/* == 地图 == */
+.map-wrapper{flex:1;position:relative}
+#map{width:100%;height:100%}
+
+.btn-overview{position:absolute;bottom:24px;right:20px;z-index:1000;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s}
+.btn-overview:hover{background:var(--card-hover);border-color:var(--accent)}
+
+.map-legend{position:absolute;bottom:24px;left:20px;z-index:1000;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--text-dim);display:flex;flex-direction:column;gap:4px}
+
+.stats-bar{position:absolute;top:16px;right:16px;z-index:1000;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;display:flex;gap:16px}
+.stat-item{text-align:center}
+.stat-num{font-size:20px;font-weight:700;color:var(--accent-glow)}
+.stat-label{font-size:10px;color:var(--text-dim)}
+
+@keyframes pulse-enconter{0%,100%{transform:scale(1);opacity:0.7}50%{transform:scale(1.6);opacity:0}}
+.encounter-ring{animation:pulse-enconter 2s ease-in-out infinite}
+
+@media(max-width:768px){body{flex-direction:column}.sidebar{width:100%;min-width:unset;max-height:38vh}.map-wrapper{flex:1;min-height:62vh}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>🌐 相遇 · 交汇</h1>
+    <div class="subtitle">每一条轨迹都有属于自己的故事，而交汇处是故事的高潮</div>
+  </div>
+  <div class="legend-bar" id="legendBar"></div>
+  <div class="timeline-container" id="timeline"></div>
+</div>
+
+<div class="map-wrapper">
+  <div id="map"></div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num" id="statPeople">0</div><div class="stat-label">人物</div></div>
+    <div class="stat-item"><div class="stat-num" id="statEvents">0</div><div class="stat-label">事件</div></div>
+    <div class="stat-item"><div class="stat-num" id="statMeets">0</div><div class="stat-label">相遇</div></div>
+  </div>
+  <button class="btn-overview" id="btnOverview">🔍 查看全览</button>
+  <div class="map-legend" id="mapLegend"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ===================== 数据模型 =====================
+
+// 人物/实体
+var people = [
+  {
+    id:'xm',name:'小明',color:'#5b9bd5',emoji:'🧑',
+    events:[
+      {date:'1995.09',title:'出生',location:'北京',lat:39.915,lng:116.404,desc:'出生于北京东城区'},
+      {date:'2008.09',title:'考入南京大学',location:'南京',lat:32.06,lng:118.797,desc:'计算机系，人生从这里改变'},
+      {date:'2012.07',title:'入职腾讯',location:'深圳',lat:22.543,lng:113.95,desc:'加入微信支付团队'},
+      {date:'2015.03',title:'调任新加坡',location:'新加坡',lat:1.352,lng:103.82,desc:'负责东南亚支付业务'},
+      {date:'2018.06',title:'辞职回国',location:'杭州',lat:30.275,lng:120.025,desc:'受老友感召，决定创业'}
+    ]
+  },
+  {
+    id:'xh',name:'小红',color:'#e06090',emoji:'👩',
+    events:[
+      {date:'1996.12',title:'出生',location:'上海',lat:31.23,lng:121.474,desc:'出生于上海静安区'},
+      {date:'2008.09',title:'考入南京大学',location:'南京',lat:32.06,lng:118.797,desc:'设计系，校园里与小明擦肩而过'},
+      {date:'2012.07',title:'入职腾讯',location:'深圳',lat:22.543,lng:113.95,desc:'加入QQ设计团队'},
+      {date:'2016.09',title:'离职旅行',location:'大理',lat:25.68,lng:100.15,desc:'环游云南，寻找设计灵感'},
+      {date:'2018.06',title:'加入创业',location:'杭州',lat:30.275,lng:120.025,desc:'与小明重逢，共赴创业'}
+    ]
+  },
+  {
+    id:'lh',name:'老韩',color:'#f0a030',emoji:'🧔',
+    events:[
+      {date:'1990.03',title:'出生',location:'成都',lat:30.573,lng:104.067,desc:'成都本地人'},
+      {date:'2013.07',title:'阿里入职',location:'杭州',lat:30.275,lng:120.025,desc:'P6产品经理'},
+      {date:'2016.03',title:'晋升P8',location:'杭州',lat:30.275,lng:120.025,desc:'带领支付产品团队'},
+      {date:'2018.06',title:'三人联合创业',location:'杭州',lat:30.275,lng:120.025,desc:'在梦想小镇租下第一间办公室'}
+    ]
+  }
+];
+
+// 相遇/相聚事件
+var encounters = [
+  {
+    id:'e1',date:'2008.09',title:'同校之缘',location:'南京大学',lat:32.06,lng:118.797,
+    desc:'小明和小红同年考入南大，虽然不同系，但命运的线已经开始靠近。',
+    type:'encounter',entities:['xm','xh'],icon:'🎒'
+  },
+  {
+    id:'e2',date:'2012.10',title:'部门联谊初遇',location:'深圳腾讯大厦',lat:22.543,lng:113.95,
+    desc:'公司团建，小明第一次正式认识小红。两人发现竟是南大校友。',
+    type:'encounter',entities:['xm','xh'],icon:'💫'
+  },
+  {
+    id:'e3',date:'2018.06',title:'星火团队成立',location:'杭州梦想小镇',lat:30.275,lng:120.025,
+    desc:'小明、小红、老韩三人集结，创办「星火科技」。一切从这间20平的小办公室开始。',
+    type:'gathering',entities:['xm','xh','lh'],icon:'🚀'
+  },
+  {
+    id:'e4',date:'2019.12',title:'A轮融资庆功',location:'上海外滩',lat:31.24,lng:121.49,
+    desc:'拿到A轮5000万，三人齐聚外滩庆祝。这一刻等了太久。',
+    type:'gathering',entities:['xm','xh','lh'],icon:'🥂'
+  }
+];
+
+// ===================== 工具函数 =====================
+function getPerson(id){for(var i=0;i<people.length;i++){if(people[i].id===id)return people[i]}return null}
+function getPersonColor(id){var p=getPerson(id);return p?p.color:'#888'}
+function getPersonEmoji(id){var p=getPerson(id);return p?p.emoji:'📍'}
+
+// 合并所有时间线条目（人物事件 + 相遇事件），按日期排序
+function buildTimeline(){
+  var items=[];
+  people.forEach(function(p){
+    p.events.forEach(function(e){
+      items.push({type:'event',personId:p.id,personName:p.name,personColor:p.color,
+        date:e.date,title:e.title,location:e.location,lat:e.lat,lng:e.lng,desc:e.desc||'',icon:p.emoji});
+    });
+  });
+  encounters.forEach(function(e){
+    var involved=e.entities.map(function(id){return getPerson(id).name}).join('、');
+    items.push({type:e.type,encounterId:e.id,date:e.date,title:e.title,location:e.location,
+      lat:e.lat,lng:e.lng,desc:e.desc,icon:e.icon,entities:e.entities,involved:involved});
+  });
+  items.sort(function(a,b){return a.date.localeCompare(b.date)});
+  return items;
+}
+var allTimelineItems=buildTimeline();
+
+// ===================== 地图初始化 =====================
+var map=L.map('map',{center:[31,112],zoom:5,zoomControl:false,attributionControl:false});
+L.control.zoom({position:'bottomleft'}).addTo(map);
+L.control.attribution({position:'bottomleft',prefix:false}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+
+// ===================== 渲染 =====================
+var allPolylines={};
+var allMarkers=[];      // {marker, type:'person'|'encounter', idx}
+var encounterMarkers=[];
+var visiblePeople={};
+people.forEach(function(p){visiblePeople[p.id]=true});
+
+function isVisible(personId){return visiblePeople[personId]}
+
+// 创建 emoji 图标
+function makeIcon(emoji,size,glow){
+  glow=glow||false;
+  return L.divIcon({
+    html:'<div style="font-size:'+size+'px;filter:'+(glow?'drop-shadow(0 0 10px rgba(255,255,255,.6)) drop-shadow(0 0 20px currentColor)':'drop-shadow(0 2px 4px rgba(0,0,0,.4))')+';transform:translate(-50%,-50%);transition:all .3s">'+emoji+'</div>',
+    className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]
+  });
+}
+
+// 相遇点动画圆环
+function addEncounterRing(lat,lng,color){
+  var ring=L.circleMarker([lat,lng],{
+    radius:8,color:color,fillColor:color,fillOpacity:0.2,weight:2,opacity:0.6,className:'encounter-ring',interactive:false
+  }).addTo(map);
+  return ring;
+}
+
+// 绘制所有人的轨迹
+function drawAllTrajectories(){
+  // 清除旧数据
+  Object.keys(allPolylines).forEach(function(k){
+    allPolylines[k].forEach(function(l){map.removeLayer(l)});
+  });
+  allPolylines={};
+  allMarkers.forEach(function(m){map.removeLayer(m.marker)});
+  allMarkers=[];
+  encounterMarkers.forEach(function(m){map.removeLayer(m.marker);if(m.ring)map.removeLayer(m.ring)});
+  encounterMarkers=[];
+
+  // 人物轨迹
+  people.forEach(function(p){
+    var lines=[];
+    var coords=p.events.map(function(e){return[e.lat,e.lng]});
+    
+    // 虚线主轨迹
+    var poly=L.polyline(coords,{color:p.color,weight:3,opacity:isVisible(p.id)?0.7:0.1,dashArray:'8 6',lineCap:'round',lineJoin:'round'});
+    poly.addTo(map);
+    lines.push(poly);
+
+    // 弧形装饰线
+    for(var i=0;i<coords.length-1;i++){
+      var midLat=(coords[i][0]+coords[i+1][0])/2;
+      var midLng=(coords[i][1]+coords[i+1][1])/2;
+      var offset=Math.min(2,0.3/Math.abs(coords[i+1][0]-coords[i][0]||1));
+      var ctrl=[midLat+offset,midLng+(Math.random()-0.5)*1.5];
+      var pts=[];
+      for(var j=0;j<=30;j++){var t=j/30;pts.push([(1-t)*(1-t)*coords[i][0]+2*(1-t)*t*ctrl[0]+t*t*coords[i+1][0],(1-t)*(1-t)*coords[i][1]+2*(1-t)*t*ctrl[1]+t*t*coords[i+1][1]])}
+      var arc=L.polyline(pts,{color:p.color,weight:1.2,opacity:isVisible(p.id)?0.22:0.03,dashArray:'4 6',interactive:false});
+      arc.addTo(map);
+      lines.push(arc);
+    }
+    allPolylines[p.id]=lines;
+
+    // 人物事件标记
+    p.events.forEach(function(evt,idx){
+      if(!isVisible(p.id))return;
+      var icon=makeIcon(p.emoji,26);
+      var marker=L.marker([evt.lat,evt.lng],{icon:icon})
+        .bindPopup('<div style="font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;min-width:160px">'+
+          '<div style="font-size:16px;margin-bottom:4px;color:'+p.color+'">'+p.emoji+' '+p.name+'</div>'+
+          '<div style="font-size:14px;font-weight:600;margin-bottom:2px">'+evt.title+'</div>'+
+          '<div style="font-size:11px;color:#999">📍 '+evt.location+' · 📅 '+evt.date+'</div>'+
+          '<div style="font-size:12px;margin-top:6px;color:#ccc">'+evt.desc+'</div></div>',
+          {maxWidth:250,className:'custom-popup'})
+        .addTo(map);
+      allMarkers.push({marker:marker,type:'person',personId:p.id,eventIdx:idx});
+    });
+  });
+
+  // 相遇/相聚事件
+  encounters.forEach(function(enc,i){
+    var colors=enc.entities.map(function(id){return getPersonColor(id)});
+    var gradient=colors.length>1?colors.join(','):colors[0];
+    var isGathering=enc.type==='gathering';
+
+    // 相遇点标记
+    var iconSize=isGathering?44:36;
+    var icon=makeIcon(enc.icon,iconSize,true);
+    var marker=L.marker([enc.lat,enc.lng],{icon:icon,zIndexOffset:100})
+      .bindPopup('<div style="font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;min-width:200px">'+
+        '<div style="font-size:14px;font-weight:700;margin-bottom:4px;background:linear-gradient(90deg,'+gradient+');-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+
+        enc.icon+' '+enc.title+'</div>'+
+        '<div style="font-size:11px;color:#999;margin-bottom:2px">📍 '+enc.location+' · 📅 '+enc.date+'</div>'+
+        '<div style="font-size:11px;color:#999;margin-bottom:4px">👥 '+enc.involved+'</div>'+
+        '<div style="font-size:12px;margin-top:4px;color:#ccc">'+enc.desc+'</div></div>',
+        {maxWidth:260,className:'custom-popup'})
+      .addTo(map);
+    
+    // 脉冲圆环
+    var ring=addEncounterRing(enc.lat,enc.lng,colors[0]);
+    
+    encounterMarkers.push({marker:marker,ring:ring,encounterIdx:i});
+  });
+}
+
+// ===================== 图例栏 =====================
+var legendBar=document.getElementById('legendBar');
+people.forEach(function(p){
+  var chip=document.createElement('div');
+  chip.className='legend-chip active';
+  chip.id='legend-'+p.id;
+  chip.innerHTML='<div class="dot" style="background:'+p.color+'"></div>'+p.emoji+' '+p.name;
+  chip.addEventListener('click',function(){
+    visiblePeople[p.id]=!visiblePeople[p.id];
+    chip.classList.toggle('hidden',!visiblePeople[p.id]);
+    chip.classList.toggle('active',visiblePeople[p.id]);
+    drawAllTrajectories();
+    fitAllBounds();
+  });
+  legendBar.appendChild(chip);
+});
+
+// 地图图例
+var mapLegend=document.getElementById('mapLegend');
+mapLegend.innerHTML='<div>🟡 实心 = 相遇点</div><div>⬡ 空心 = 团队聚集</div><div>━ ━ 虚线 = 个人轨迹</div>';
+
+// ===================== 时间线渲染 =====================
+var timelineEl=document.getElementById('timeline');
+allTimelineItems.forEach(function(item,idx){
+  var div=document.createElement('div');
+  div.className='timeline-item';
+  if(item.type==='encounter')div.classList.add('encounter');
+  if(item.type==='gathering')div.classList.add('gathering');
+  div.dataset.index=idx;
+
+  var dotColor='var(--border)';
+  if(item.type==='event')dotColor=item.personColor;
+  else if(item.type==='encounter'||item.type==='gathering'){
+    var e=getPerson(item.entities[0]);
+    dotColor=e?e.color:'var(--accent)';
+  }
+  div.style.setProperty('--dot-color',dotColor);
+  div.style.borderColor=dotColor;
+
+  var tagHtml='';
+  if(item.type==='event'){
+    tagHtml='<span class="timeline-tag" style="background:'+item.personColor+'20;color:'+item.personColor+'">'+item.personName+'</span>';
+  }else if(item.type==='encounter'){
+    tagHtml='<span class="timeline-tag" style="background:rgba(255,255,255,0.06);color:#ccc">💞 相遇</span>';
+  }else if(item.type==='gathering'){
+    tagHtml='<span class="timeline-tag" style="background:rgba(255,255,255,0.06);color:#ccc">🤝 相聚</span>';
+  }
+
+  div.innerHTML=
+    '<div class="timeline-date">'+item.date+'</div>'+
+    '<div class="timeline-title" style="color:'+(item.type==='event'?item.personColor:'')+'">'+item.icon+' '+item.title+'</div>'+
+    '<div class="timeline-meta">'+tagHtml+' 📍 '+item.location+(item.type==='encounter'||item.type==='gathering'?' 👥 '+item.involved:'')+'</div>';
+
+  div.addEventListener('click',function(){focusTimelineItem(idx)});
+  timelineEl.appendChild(div);
+});
+
+// 统计
+document.getElementById('statPeople').textContent=people.length;
+document.getElementById('statEvents').textContent=allTimelineItems.length;
+document.getElementById('statMeets').textContent=encounters.length;
+
+// ===================== 交互 =====================
+var activeIdx=-1;
+
+function focusTimelineItem(idx){
+  if(activeIdx===idx){activeIdx=-1;resetHighlight();fitAllBounds();return}
+  activeIdx=idx;
+  var item=allTimelineItems[idx];
+  
+  updateTimelineHighlight(idx);
+  map.flyTo([item.lat,item.lng],idx,{duration:1});
+  
+  var items=document.querySelectorAll('.timeline-item');
+  if(items[idx])items[idx].scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function updateTimelineHighlight(idx){
+  document.querySelectorAll('.timeline-item').forEach(function(el,i){el.classList.toggle('active',i===idx)});
+}
+
+function resetHighlight(){
+  updateTimelineHighlight(-1);
+}
+
+function fitAllBounds(){
+  var allCoords=[];
+  people.forEach(function(p){
+    if(!isVisible(p.id))return;
+    p.events.forEach(function(e){allCoords.push([e.lat,e.lng])});
+  });
+  encounters.forEach(function(e){allCoords.push([e.lat,e.lng])});
+  if(allCoords.length>0)map.flyToBounds(L.latLngBounds(allCoords).pad(0.15),{duration:1});
+  else map.flyToBounds(L.latLngBounds([[18,73],[54,135]]).pad(0.15),{duration:1});
+}
+
+document.getElementById('btnOverview').addEventListener('click',function(){
+  activeIdx=-1;resetHighlight();fitAllBounds();
+});
+
+// 初始绘制
+drawAllTrajectories();
+fitAllBounds();
+console.log('🌐 相遇地图已就绪！'+people.length+'人，'+allTimelineItems.length+'个事件，'+encounters.length+'次相遇。');
+</script>
+</body>
+</html>

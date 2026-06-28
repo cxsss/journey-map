@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人生历程 · 轨迹地图</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+:root{--bg:#0f0f13;--surface:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--text-dim:#8888a0;--accent:#5b9bd5;--accent-glow:#7bb5f0;--timeline-line:#333350;--card-hover:#222236}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
+.sidebar{width:400px;min-width:400px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
+.sidebar-header{padding:28px 32px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(91,155,213,0.08) 0%,transparent 100%)}
+.sidebar-header h1{font-size:24px;font-weight:700;letter-spacing:1px;color:var(--accent-glow)}
+.sidebar-header .subtitle{font-size:13px;color:var(--text-dim);margin-top:6px}
+.timeline-container{flex:1;overflow-y:auto;padding:8px 20px 32px 32px;scroll-behavior:smooth}
+.timeline-container::-webkit-scrollbar{width:4px}
+.timeline-container::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.timeline-item{position:relative;padding:18px 0 18px 28px;cursor:pointer;transition:all .25s ease;border-radius:10px;margin:2px 0}
+.timeline-item:hover,.timeline-item.active{background:var(--card-hover)}
+.timeline-item::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--timeline-line)}
+.timeline-item:first-child::before{top:24px}
+.timeline-item:last-child::before{bottom:calc(100% - 24px)}
+.timeline-item::after{content:'';position:absolute;left:0;top:27px;width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--border);transition:all .3s ease;z-index:1}
+.timeline-item.active::after,.timeline-item:hover::after{border-color:var(--accent);background:var(--accent);box-shadow:0 0 12px rgba(91,155,213,.5)}
+.timeline-date{font-size:12px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:4px;font-variant-numeric:tabular-nums;font-family:'SF Mono','Cascadia Code','Consolas',monospace}
+.timeline-item.active .timeline-date{color:var(--accent-glow)}
+.timeline-title{font-size:16px;font-weight:600;margin-bottom:3px;transition:color .25s}
+.timeline-item.active .timeline-title{color:var(--accent-glow)}
+.timeline-location{font-size:13px;color:var(--text-dim);display:flex;align-items:center;gap:4px}
+.map-wrapper{flex:1;position:relative}
+#map{width:100%;height:100%}
+.map-stats{position:absolute;top:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;z-index:1000;pointer-events:none;box-shadow:0 4px 24px rgba(0,0,0,.4)}
+.map-stats .stat-num{font-size:28px;font-weight:700;color:var(--accent-glow)}
+.map-stats .stat-label{font-size:11px;color:var(--text-dim);margin-top:2px}
+.btn-overview{position:absolute;bottom:28px;right:20px;z-index:1000;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s}
+.btn-overview:hover{background:var(--card-hover);border-color:var(--accent)}
+.legend{position:absolute;bottom:28px;left:20px;z-index:1000;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-dim)}
+.legend-line{width:30px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--accent),#e06090)}
+.legend-dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+@media(max-width:768px){body{flex-direction:column}.sidebar{width:100%;min-width:unset;max-height:40vh}.map-wrapper{flex:1;min-height:60vh}}
+.custom-popup .leaflet-popup-content-wrapper{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px}
+.custom-popup .leaflet-popup-tip{background:var(--surface)}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>🗺️ 人生历程</h1>
+    <div class="subtitle">每个人都是一条独特的轨迹</div>
+  </div>
+  <div class="timeline-container" id="timeline"></div>
+</div>
+
+<div class="map-wrapper">
+  <div id="map"></div>
+  <div class="map-stats">
+    <div class="stat-num" id="stat-count">0</div>
+    <div class="stat-label">个重要足迹</div>
+  </div>
+  <button class="btn-overview" id="btnOverview">🔍 查看全览</button>
+  <div class="legend">
+    <div class="legend-line"></div> 人生轨迹
+    <div class="legend-dot"></div> 关键节点
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var lifeEvents = [
+  {id:1,date:'1990年3月',title:'出生',location:'北京市',desc:'出生于北京市东城区，一个普通的工薪家庭。',lat:39.915,lng:116.404,icon:'👶'},
+  {id:2,date:'1996年9月',title:'上小学',location:'北京市海淀区',desc:'进入海淀区中关村第一小学就读，开始接触计算机。',lat:39.982,lng:116.305,icon:'📚'},
+  {id:3,date:'2002年9月',title:'初中时光',location:'北京市海淀区',desc:'就读于中国人民大学附属中学初中部，成绩优异。',lat:39.972,lng:116.318,icon:'🏫'},
+  {id:4,date:'2005年9月',title:'南下求学',location:'上海市徐汇区',desc:'考入上海中学，第一次离开北京独立生活。',lat:31.188,lng:121.436,icon:'🚆'},
+  {id:5,date:'2008年9月',title:'大学生涯',location:'南京市',desc:'考入南京大学计算机科学与技术系，系统学习编程。',lat:32.06,lng:118.797,icon:'🎓'},
+  {id:6,date:'2012年7月',title:'初入职场',location:'深圳市南山区',desc:'毕业后加入腾讯，担任后端开发工程师，参与微信支付项目。',lat:22.543,lng:113.95,icon:'💼'},
+  {id:7,date:'2015年3月',title:'海外历练',location:'新加坡',desc:'获得新加坡Shopee的工作机会，开始海外职业生涯。',lat:1.3521,lng:103.8198,icon:'✈️'},
+  {id:8,date:'2018年6月',title:'回国创业',location:'杭州市余杭区',desc:'回国联合创办AI科技公司，落户杭州未来科技城。',lat:30.275,lng:120.025,icon:'🚀'},
+  {id:9,date:'2021年3月',title:'公司扩张',location:'上海市浦东新区',desc:'公司在上海设立研发中心，团队规模突破200人。',lat:31.235,lng:121.54,icon:'🏢'},
+  {id:10,date:'2024年至今',title:'旅居生活',location:'云南大理',desc:'开始远程办公+旅居模式，享受苍山洱海间的慢生活。',lat:25.68,lng:100.15,icon:'🏔️'}
+];
+
+var map = L.map('map',{center:[33,112],zoom:5,zoomControl:false,attributionControl:false});
+L.control.zoom({position:'bottomleft'}).addTo(map);
+L.control.attribution({position:'bottomleft',prefix:false}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+
+var markers=[];
+var latlngs=lifeEvents.map(function(e){return[e.lat,e.lng]});
+
+function createIcon(emoji,isActive){
+  var s=isActive?42:32;
+  var glow=isActive?'drop-shadow(0 0 8px rgba(91,155,213,.8))':'drop-shadow(0 2px 4px rgba(0,0,0,.5))';
+  return L.divIcon({html:'<div style="font-size:'+s+'px;filter:'+glow+';transform:translate(-50%,-50%);transition:all .3s ease">'+emoji+'</div>',className:'',iconSize:[s,s],iconAnchor:[s/2,s/2]});
+}
+
+var polyline=L.polyline(latlngs,{color:'#5b9bd5',weight:3,opacity:0.7,dashArray:'8 6',lineCap:'round',lineJoin:'round'}).addTo(map);
+
+for(var i=0;i<latlngs.length-1;i++){
+  (function(p1,p2){
+    var midLat=(p1[0]+p2[0])/2,midLng=(p1[1]+p2[1])/2;
+    var offset=Math.min(2,0.3/Math.abs(p2[0]-p1[0]||1));
+    var ctrl=[midLat+offset,midLng+(Math.random()-0.5)*1.5];
+    var pts=[];
+    for(var j=0;j<=30;j++){var t=j/30;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
+    L.polyline(pts,{color:'#7bb5f0',weight:1.5,opacity:0.25,dashArray:'4 8',interactive:false}).addTo(map);
+  })(latlngs[i],latlngs[i+1]);
+}
+
+lifeEvents.forEach(function(event,idx){
+  var icon=createIcon(event.icon,false);
+  var marker=L.marker([event.lat,event.lng],{icon:icon})
+    .bindPopup('<div style="font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;min-width:180px">'+
+      '<div style="font-size:18px;margin-bottom:6px">'+event.icon+' '+event.title+'</div>'+
+      '<div style="font-size:12px;color:#888;margin-bottom:4px">📍 '+event.location+'</div>'+
+      '<div style="font-size:12px;color:#666;margin-bottom:2px">📅 '+event.date+'</div>'+
+      '<div style="font-size:13px;margin-top:8px;line-height:1.5;color:#ccc">'+event.desc+'</div></div>',
+      {maxWidth:280,className:'custom-popup'})
+    .addTo(map);
+  marker.on('click',function(){scrollToTimeline(idx)});
+  markers.push({marker:marker,idx:idx});
+});
+
+(function(){
+  var first=lifeEvents[0],last=lifeEvents[lifeEvents.length-1];
+  L.marker([first.lat,first.lng],{icon:L.divIcon({html:'<div style="background:#5b9bd5;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;white-space:nowrap;transform:translate(-50%,-140%)">起点</div>',className:'',iconSize:[0,0]}),interactive:false}).addTo(map);
+  L.marker([last.lat,last.lng],{icon:L.divIcon({html:'<div style="background:#e06090;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;white-space:nowrap;transform:translate(-50%,-140%)">现在</div>',className:'',iconSize:[0,0]}),interactive:false}).addTo(map);
+})();
+
+var timelineEl=document.getElementById('timeline');
+document.getElementById('stat-count').textContent=lifeEvents.length;
+
+lifeEvents.forEach(function(event,idx){
+  var div=document.createElement('div');
+  div.className='timeline-item';
+  div.dataset.index=idx;
+  div.innerHTML='<div class="timeline-date">'+event.date+'</div><div class="timeline-title">'+event.icon+' '+event.title+'</div><div class="timeline-location"><span class="loc-icon">📍</span> '+event.location+'</div>';
+  div.addEventListener('click',function(){focusEvent(idx)});
+  timelineEl.appendChild(div);
+});
+
+var activeIdx=-1;
+
+function focusEvent(idx){
+  if(activeIdx===idx){activeIdx=-1;resetAllMarkers();updateTimelineActive(-1);fitAllBounds();return}
+  activeIdx=idx;
+  updateMarkers(idx);
+  map.flyTo([lifeEvents[idx].lat,lifeEvents[idx].lng],12,{duration:1.2});
+  updateTimelineActive(idx);
+  scrollToTimeline(idx);
+}
+
+function updateMarkers(idx){
+  markers.forEach(function(m,i){m.marker.setIcon(createIcon(lifeEvents[i].icon,i===idx))});
+  polyline.setStyle({opacity:idx>=0?0.3:0.7});
+}
+
+function resetAllMarkers(){
+  markers.forEach(function(m,i){m.marker.setIcon(createIcon(lifeEvents[i].icon,false))});
+  polyline.setStyle({opacity:0.7});
+}
+
+function updateTimelineActive(idx){
+  document.querySelectorAll('.timeline-item').forEach(function(el,i){el.classList.toggle('active',i===idx)});
+}
+
+function scrollToTimeline(idx){
+  var items=document.querySelectorAll('.timeline-item');
+  if(items[idx]) items[idx].scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function fitAllBounds(){
+  map.flyToBounds(L.latLngBounds(latlngs).pad(0.2),{duration:1});
+}
+
+document.getElementById('btnOverview').addEventListener('click',function(){
+  activeIdx=-1;resetAllMarkers();updateTimelineActive(-1);fitAllBounds();
+});
+
+fitAllBounds();
+console.log('🗺️ 人生历程地图已就绪！共加载 '+lifeEvents.length+' 个足迹。');
+</script>
+</body>
+</html>
