@@ -183,7 +183,7 @@ tileProviders.forEach(function(p,i){
 });
 setTile(1);
 function makeIcon(e,i,col,isA){
-  var r=isA?34:26,em=e.icon||"📍",c=isA?"#f0c040":col;
+  var r=isA?34:26,em="📍",c=isA?"#f0c040":col;
   return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+';box-shadow:0 0 10px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35)">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});
 }
 function mkTraveler(){return L.marker([0,0],{icon:L.divIcon({html:'<div class="traveler"></div>',className:"",iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:9999})}

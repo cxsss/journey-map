@@ -149,7 +149,7 @@ tileProviders.forEach(function(p,i){
 setTile(1);
 var markers=[],polyline;
 function makeIcon(e,i,isA){
-  var r=isA?36:28,em=e.icon||"📍",c=isA?"#f0c040":"var(--gold-border)";
+  var r=isA?36:28,em="📍",c=isA?"#f0c040":"var(--gold-border)";
   return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});
 }
 function renderMap(){
