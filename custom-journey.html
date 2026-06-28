@@ -1,88 +1,3 @@
-﻿<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>自定义历程 · 轨迹地图</title>
-<meta name="theme-color" content="#0a0a12">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-:root{--bg:#0a0a12;--surface:#16161e;--surface-2:#1e1e2a;--border:rgba(255,255,255,.06);--border-strong:rgba(255,255,255,.1);--text:#fff;--text-2:#9ca3af;--text-3:#6b7280;--gold:#dc9a5c;--gold-soft:rgba(220,154,92,.15);--gold-border:#d4af37;--charcoal:#36454f}
-body{font-family:"Urbanist","Noto Sans SC","PingFang SC",sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
-body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3);min-width:40px;min-height:40px}
-.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
-.app-loading.hide{opacity:0;pointer-events:none}
-.loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.sidebar{width:360px;min-width:360px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5;transition:width .35s cubic-bezier(.4,0,.2,1),min-width .35s cubic-bezier(.4,0,.2,1)}
-.sidebar.editing{width:500px;min-width:500px}
-.sidebar-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.sidebar-head .kicker{font-size:11px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:4px}
-.sidebar-head h2{font-family:"Noto Serif SC","Song",serif;font-size:18px;font-weight:700;letter-spacing:2px;color:#e0d8cc}
-.btn-edit{padding:6px 16px;border-radius:16px;border:1px solid var(--border-strong);background:rgba(255,255,255,.02);color:var(--text-2);font-size:11px;cursor:pointer;transition:all .4s;font-family:inherit}
-.btn-edit:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
-.timeline{flex:1;overflow-y:auto;padding:10px 16px 16px 22px;scroll-behavior:smooth}
-.tl-item{position:relative;padding:13px 0 13px 24px;cursor:pointer;border-radius:8px;margin:2px 0;transition:all .4s}
-.tl-item:hover{background:rgba(255,255,255,.02)}
-.tl-item.active{background:var(--gold-soft)}
-.tl-item::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
-.tl-item:first-child::before{top:18px}
-.tl-item:last-child::before{bottom:calc(100% - 18px)}
-.tl-item::after{content:"";position:absolute;left:3px;top:20px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--border-strong);transition:all .4s;z-index:1}
-.tl-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(220,154,92,.5);transform:scale(1.35)}
-.tl-date{font-size:10px;font-weight:500;color:var(--text-3);margin-bottom:3px;letter-spacing:.5px}
-.tl-title{font-size:13px;font-weight:500;line-height:1.4}
-.tl-loc{font-size:11px;font-weight:400;color:var(--text-2);margin-top:3px}
-.editor{display:none;flex:1;padding:16px 20px;flex-direction:column;gap:12px;overflow-y:auto}
-.sidebar.editing .timeline{display:none}
-.sidebar.editing .editor{display:flex}
-.editor textarea{flex:1;min-height:240px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:16px;font-family:"SF Mono","JetBrains Mono","Consolas",monospace;font-size:12px;line-height:1.6;resize:none}
-.editor textarea:focus{outline:none;border-color:rgba(220,154,92,.25)}
-.editor .hint{font-size:11px;color:var(--text-2)}
-.editor .hint code{background:var(--surface-2);padding:2px 6px;border-radius:4px;color:var(--gold)}
-.editor-actions{display:flex;gap:8px;flex-wrap:wrap}
-.editor-actions button,.btn-ctrl,.btn-back{padding:7px 16px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text-2);font-size:11px;cursor:pointer;transition:all .4s;font-family:inherit}
-.editor-actions button:hover,.btn-ctrl:hover,.btn-back:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
-.btn-apply{background:rgba(220,154,92,.08)!important;border-color:rgba(220,154,92,.2)!important;color:var(--gold)!important}
-.btn-apply:hover{border-color:rgba(220,154,92,.4)!important}
-.map-wrap{flex:1;position:relative}
-#map{width:100%;height:100%;filter:brightness(1) contrast(100%)}
-.layer-ctrl{position:absolute;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:2px;background:rgba(22,22,30,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:10px;padding:4px}
-.layer-btn{width:34px;height:34px;border:1px solid transparent;border-radius:7px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .3s;color:var(--text-3);padding:0;position:relative}
-.layer-btn:hover{border-color:var(--border-strong);background:rgba(255,255,255,.03)}
-.layer-btn.active{border-color:var(--gold-border);background:rgba(212,175,55,.08);color:var(--gold);box-shadow:0 0 12px rgba(212,175,55,.06)}
-.layer-btn .tip{position:absolute;right:42px;background:rgba(22,22,30,.92);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;white-space:nowrap;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .2s}
-.layer-btn:hover .tip{opacity:1}
-.map-ctrl{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:8px;background:rgba(22,22,30,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:14px;padding:8px 14px}
-.map-ctrl a{text-decoration:none}
-.map-stats{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:24px;background:rgba(22,22,30,.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:8px 20px}
-.map-stats>div{text-align:center}
-.map-stats .n{font-size:20px;font-weight:700;color:var(--gold);line-height:1}
-.map-stats .l{font-size:9px;color:var(--text-3);letter-spacing:1px;margin-top:2px}
-.journey-marker{background:transparent!important;border:none!important;display:flex;align-items:center;justify-content:center}
-.journey-marker .marker-body{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid var(--gold-border);box-shadow:0 0 12px rgba(212,175,55,.15),0 2px 8px rgba(0,0,0,.4);transition:all .3s;position:relative}
-.journey-marker .marker-body.active{width:36px;height:36px;font-size:16px;border-color:#f0c040;box-shadow:0 0 20px rgba(240,192,64,.35),0 2px 12px rgba(0,0,0,.5)}
-.journey-marker .marker-body::after{content:"";position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:var(--gold-border);clip-path:polygon(50% 100%,0 0,100% 0);opacity:0}
-.journey-marker .marker-body.active::after{opacity:1}
-.leaflet-popup-content-wrapper{padding:0;border-radius:10px!important;background:rgba(22,22,30,.92)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-strong);overflow:hidden}
-.leaflet-popup-content{margin:0!important;min-width:160px!important;width:auto!important}
-.leaflet-popup-content .popup-inner{padding:14px 16px}
-.leaflet-popup-content .popup-title{font-size:14px;font-weight:600;color:#e0d8cc;margin-bottom:2px}
-.leaflet-popup-content .popup-meta{font-size:10px;color:var(--text-3);letter-spacing:.5px}
-.leaflet-popup-content .popup-desc{font-size:11px;color:var(--text-2);line-height:1.5;margin-top:6px}
-.leaflet-popup-tip-container{opacity:0!important}
-.leaflet-popup-close-button{color:var(--text-3)!important;top:6px!important;right:6px!important;font-size:14px!important}
-.leaflet-popup-close-button:hover{color:var(--text)!important}
-#mapToast{position:absolute;top:68px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(22,22,30,.8);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:10px;padding:8px 18px;font-size:12px;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .4s}
-#mapToast.show{opacity:1}
-</style>
-</head>
 <body>
 <div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="sidebar" id="sidebar">
@@ -92,7 +7,7 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
     <textarea id="editor" placeholder="在此粘贴 JSON..."></textarea>
     <div class="hint">每项含 <code>date</code> <code>title</code> <code>location</code> <code>lat</code> <code>lng</code> <code>desc</code> · <code>icon</code> 可选</div>
     <div class="editor-actions">
-      <button class="btn-apply" id="btnApply">&#10003; 应用</button>
+      <button class="btn-apply" id="btnApply">✓ 应用</button>
       <button id="btnCancel">取消</button>
       <button id="btnSample">示例</button>
       <button id="btnDownload">导出 JSON</button>
@@ -104,7 +19,7 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
   <div id="map"></div>
   <div class="layer-ctrl" id="layerCtrl"></div>
   <div class="map-ctrl">
-    <a href="index.html" class="btn-back">&#8592; 返回首页</a>
+    <a href="index.html" class="btn-back">← 返回首页</a>
     <button class="btn-ctrl" id="btnOverview">全景</button>
   </div>
   <div class="map-stats">
@@ -115,14 +30,14 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var tileProviders=[
-  {name:"暗色",icon:"&#127769;",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
-  {name:"卫星",icon:"&#128640;",src:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",attr:"Esri"},
-  {name:"地形",icon:"&#9968;",src:"https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",attr:"OpenTopoMap"},
-  {name:"水彩",icon:"&#127912;",src:"https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png",attr:"Stamen"},
-  {name:"极简",icon:"&#11036;",src:"https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}{r}.png",attr:"Stamen"},
-  {name:"街道",icon:"&#128506;",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
+  {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
+  {name:"卫星",icon:"🛰️",src:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",attr:"Esri"},
+  {name:"地形",icon:"🏔️",src:"https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",attr:"OpenTopoMap"},
+  {name:"水彩",icon:"🎨",src:"https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png",attr:"Stamen"},
+  {name:"极简",icon:"⬜",src:"https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}{r}.png",attr:"Stamen"},
+  {name:"街道",icon:"🗺️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
 ];
-var sample=[{date:"2020 &#26149;",title:"&#36215;&#28857;",location:"北京",lat:39.90,lng:116.40,desc:"一切从这里开始。",icon:"&#128640;"},{date:"2020 &#22799;",title:"成&#37117;",location:"成都",lat:30.57,lng:104.07,desc:"天府之国。",icon:"&#127798;"},{date:"2021 &#26149;",title:"三亚",location:"三亚",lat:18.25,lng:109.50,desc:"碧海蓝天。"},{date:"2021 &#31179;",title:"拉&#33832;",location:"拉萨",lat:29.65,lng:91.10,desc:"日光洒肩。",icon:"&#9977;"},{date:"2022",title:"上海",location:"上海",lat:31.23,lng:121.47,desc:"在路上。",icon:"&#127775;"}];
+var sample=[{date:"2020 春",title:"起点",location:"北京",lat:39.90,lng:116.40,desc:"一切从这里开始。",icon:"🚀"},{date:"2020 夏",title:"成都",location:"成都",lat:30.57,lng:104.07,desc:"天府之国。",icon:"🌶️"},{date:"2021 春",title:"三亚",location:"三亚",lat:18.25,lng:109.50,desc:"碧海蓝天。"},{date:"2021 秋",title:"拉萨",location:"拉萨",lat:29.65,lng:91.10,desc:"日光洒肩。",icon:"🏔️"},{date:"2022",title:"上海",location:"上海",lat:31.23,lng:121.47,desc:"在路上。",icon:"🌟"}];
 var data=JSON.parse(JSON.stringify(sample)),active=-1,currentLayer=0,tileLayer=null;
 var map=L.map("map",{center:[33,112],zoom:4,minZoom:2,zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:0,wheelPxPerZoomLevel:120,worldCopyJump:true});
 L.control.zoom({position:"bottomright"}).addTo(map);
@@ -144,7 +59,7 @@ tileProviders.forEach(function(p,i){
 });
 var markers=[],polyline;
 function makeIcon(e,i,isA){
-  var r=isA?36:28,em=e.icon||"&#128205;",c=isA?"#f0c040":"var(--gold-border)";
+  var r=isA?36:28,em=e.icon||"📍",c=isA?"#f0c040":"var(--gold-border)";
   return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});
 }
 function renderMap(){
@@ -153,16 +68,20 @@ function renderMap(){
   var coords=data.map(function(e){return[e.lat,e.lng]});
   if(coords.length>1){
     polyline=L.polyline(coords,{color:"#dc9a5c",weight:2,opacity:.45,dashArray:"8 6"}).addTo(map);
-    for(var i=0;i<coords.length-1;i++){(function(p1,p2){
-      var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2,ctrl=[mlat+Math.min(2,.3/Math.abs(p2[0]-p1[0]||1)),mlng+(Math.random()-.5)*1.5],pts=[];
-      for(var j=0;j<=30;j++){var t=j/30;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
-      L.polyline(pts,{color:"#dc9a5c",weight:1,opacity:.18,dashArray:"4 8",interactive:false}).addTo(map);
-    })(coords[i],coords[i+1])}
+    for(var i=0;i<coords.length-1;i++){
+      (function(p1,p2){
+        var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;
+        var ctrl=[mlat+Math.min(2,.3/Math.abs(p2[0]-p1[0]||1)),mlng+(Math.random()-.5)*1.5];
+        var pts=[];
+        for(var j=0;j<=30;j++){var t=j/30;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
+        L.polyline(pts,{color:"#dc9a5c",weight:1,opacity:.18,dashArray:"4 8",interactive:false}).addTo(map);
+      })(coords[i],coords[i+1]);
+    }
   }
   data.forEach(function(e,i){
     var a=i===active;
     var m=L.marker([e.lat,e.lng],{icon:makeIcon(e,i,a)}).addTo(map);
-    m.bindPopup('<div class="popup-inner"><div class="popup-title">'+(e.icon||"")+' '+e.title+'</div><div class="popup-meta">'+e.location+' &middot; '+e.date+'</div>'+(e.desc?'<div class="popup-desc">'+e.desc+'</div>":"")+'</div>',{maxWidth:280,closeButton:true,className:"custom-popup"});
+    m.bindPopup('<div class="popup-inner"><div class="popup-title">'+(e.icon||"")+' '+e.title+'</div><div class="popup-meta">'+e.location+' · '+e.date+'</div>'+(e.desc?'<div class="popup-desc">'+e.desc+'</div>':"")+'</div>',{maxWidth:280,closeButton:true,className:"custom-popup"});
     m.on("click",function(){focus(i)});
     markers.push(m);
   });
@@ -170,7 +89,11 @@ function renderMap(){
 function renderTL(){
   var el=document.getElementById("timeline");el.innerHTML="";
   document.getElementById("statCount").textContent=data.length;
-  data.forEach(function(e,i){var d=document.createElement("div");d.className="tl-item";d.innerHTML='<div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';d.onclick=function(){focus(i)};el.appendChild(d)});
+  data.forEach(function(e,i){
+    var d=document.createElement("div");d.className="tl-item";
+    d.innerHTML='<div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';
+    d.onclick=function(){focus(i)};el.appendChild(d);
+  });
 }
 function focus(i){
   if(active===i){active=-1;reset();fit();return}
@@ -179,23 +102,22 @@ function focus(i){
   markers.forEach(function(m,j){var e=data[j];m.setIcon(makeIcon(e,j,j===active));if(j===active)m.bringToFront()});
   scroll(i);
   var e=data[i],toast=document.getElementById("mapToast");
-  toast.textContent=(e.icon||"")+" "+e.title+" &middot; "+e.date;
+  toast.textContent=(e.icon||"")+" "+e.title+" · "+e.date;
   toast.classList.add("show");clearTimeout(toast._t);
   toast._t=setTimeout(function(){toast.classList.remove("show")},3500);
 }
 function scroll(i){var items=document.querySelectorAll(".tl-item");if(items[i])items[i].scrollIntoView({behavior:"smooth",block:"center"})}
 function reset(){document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active")});markers.forEach(function(m,j){m.setIcon(makeIcon(data[j],j,false))})}
 function fit(){var coords=data.map(function(e){return[e.lat,e.lng]});if(coords.length)map.flyToBounds(L.latLngBounds(coords).pad(.2),{duration:1.2,maxZoom:6})}
-function showToast(text){var toast=document.getElementById("mapToast");toast.textContent=text;toast.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){toast.classList.remove("show")},2600)}
-document.getElementById("btnOverview").onclick=function(){active=-1;reset();fit();updateSummary()};
+document.getElementById("btnOverview").onclick=function(){active=-1;reset();fit()};
 var sidebar=document.getElementById("sidebar"),editor=document.getElementById("editor"),editing=false;
 document.getElementById("btnEdit").onclick=function(){editing=!editing;sidebar.classList.toggle("editing",editing);this.textContent=editing?"返回视图":"编辑数据";if(editing)editor.value=JSON.stringify(data,null,2)};
 document.getElementById("btnCancel").onclick=function(){editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"};
-document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTL();fit();updateSummary();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
+document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTL();fit();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
 document.getElementById("btnSample").onclick=function(){editor.value=JSON.stringify(sample,null,2)};
 document.getElementById("fileInput").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){editor.value=ev.target.result};r.readAsText(f)};
 document.getElementById("btnDownload").onclick=function(){var b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download="journey.json";a.click();URL.revokeObjectURL(u)};
-renderMap();renderTL();fit();updateSummary();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
+renderMap();renderTL();fit();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
 </body>
 </html>
