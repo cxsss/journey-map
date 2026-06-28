@@ -50,10 +50,9 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .map-area{flex:1;position:relative}
 .landmark-banner{position:absolute;top:0;left:0;right:0;height:200px;z-index:3;overflow:hidden;border-bottom:1px solid var(--border)}
 .landmark-banner .bg-layer{position:absolute;inset:0;transition:opacity .8s ease}
-.landmark-banner .bg-photo{background-size:cover;background-position:center}
-.landmark-banner .bg-gradient{opacity:0}
-.landmark-banner.no-photo .bg-photo{opacity:0}
-.landmark-banner.no-photo .bg-gradient{opacity:1}
+.landmark-banner .bg-photo{background-size:cover;background-position:center;opacity:0}
+.landmark-banner .bg-photo.show{opacity:1}
+.landmark-banner .bg-gradient{opacity:1}
 .landmark-banner .banner-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,10,6,.92) 0%,rgba(13,10,6,.4) 50%,rgba(13,10,6,.15) 100%)}
 .landmark-banner .banner-frame{position:absolute;inset:0;border:1px solid rgba(255,255,255,.04);margin:8px;border-radius:2px;pointer-events:none}
 .landmark-banner .banner-info{position:absolute;bottom:16px;left:20px;right:20px;display:flex;align-items:flex-end;justify-content:space-between}
@@ -145,107 +144,70 @@ var tileProviders=[
   {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
   {name:"街道",icon:"🏙️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
 ];
-
-function photoUrl(title){return"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(title)+"?width=800"}
-
 var routes=[
-  {id:"beijing",name:"北京精华游",emoji:"🏯",color:"#e89840",colorHex:"#e89840",center:[39.920,116.410],zoom:12,
-   info:"三天五步 · 古都之心 · 约48 km",
+  {id:"beijing",name:"北京精华游",emoji:"🏯",color:"#e89840",colorHex:"#e89840",center:[39.920,116.410],zoom:12,info:"三天五步 · 古都之心 · 约48 km",
    stops:[
-    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",emoji:"🏛️",bg:"linear-gradient(135deg,#3a2018,#5a3020,#4a2818,#221008)",photo:"Tiananmen_Gate.jpg"},
-    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",emoji:"🏯",bg:"linear-gradient(135deg,#3a1a10,#5a2818,#4a2014,#201008)",photo:"Forbidden_City_Beijing_View.jpg"},
-    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",emoji:"🛕",bg:"linear-gradient(135deg,#182838,#243850,#2e4260,#101c28)",photo:"Hall_of_Prayer_for_Good_Harvests.JPG"},
-    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",emoji:"🏞️",bg:"linear-gradient(135deg,#1a2e1e,#284a30,#3a603e,#142018)",photo:"Summer_Palace_Beijing_China.jpg"},
-    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",emoji:"🏔️",bg:"linear-gradient(135deg,#1c2418,#2c3a26,#3c4e34,#141c10)",photo:"Great_Wall_of_China_Badaling.jpg"},
-    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",emoji:"🏘️",bg:"linear-gradient(135deg,#201a14,#302418,#3e2e1c,#181008)",photo:"Gubei_Water_Town_China.jpg"}
+    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",emoji:"🏛️",bg:"linear-gradient(135deg,#3a2018,#5a3020,#4a2818,#221008)",wiki:"Tiananmen"},
+    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",emoji:"🏯",bg:"linear-gradient(135deg,#3a1a10,#5a2818,#4a2014,#201008)",wiki:"Forbidden_City"},
+    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",emoji:"🛕",bg:"linear-gradient(135deg,#182838,#243850,#2e4260,#101c28)",wiki:"Temple_of_Heaven"},
+    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",emoji:"🏞️",bg:"linear-gradient(135deg,#1a2e1e,#284a30,#3a603e,#142018)",wiki:"Summer_Palace"},
+    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",emoji:"🏔️",bg:"linear-gradient(135deg,#1c2418,#2c3a26,#3c4e34,#141c10)",wiki:"Great_Wall_of_China"},
+    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",emoji:"🏘️",bg:"linear-gradient(135deg,#201a14,#302418,#3e2e1c,#181008)",wiki:"Yanqing_District"}
   ]},
-  {id:"shanghai",name:"上海魔都漫步",emoji:"🏙️",color:"#e06060",colorHex:"#e06060",center:[31.240,121.480],zoom:12,
-   info:"一日浮光 · 浦西到浦东 · 约15 km",
+  {id:"shanghai",name:"上海魔都漫步",emoji:"🏙️",color:"#e06060",colorHex:"#e06060",center:[31.240,121.480],zoom:12,info:"一日浮光 · 浦西到浦东 · 约15 km",
    stops:[
-    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",emoji:"🌃",bg:"linear-gradient(135deg,#181a30,#242a48,#2e3860,#101420)",photo:"The_Bund_Shanghai.jpg"},
-    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",emoji:"🛍️",bg:"linear-gradient(135deg,#281822,#3c2634,#4e3442,#1c1018)",photo:"Nanjing_Road_Shanghai.jpg"},
-    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",emoji:"🍸",bg:"linear-gradient(135deg,#221826,#342638,#46344c,#181020)",photo:"Xintiandi_Shanghai.jpg"},
-    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",emoji:"🏢",bg:"linear-gradient(135deg,#181e30,#242c48,#2e3a5c,#101420)",photo:"Shanghai_Skyline_Pudong.jpg"}
+    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",emoji:"🌃",bg:"linear-gradient(135deg,#181a30,#242a48,#2e3860,#101420)",wiki:"The_Bund"},
+    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",emoji:"🛍️",bg:"linear-gradient(135deg,#281822,#3c2634,#4e3442,#1c1018)",wiki:"Nanjing_Road"},
+    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",emoji:"🍸",bg:"linear-gradient(135deg,#221826,#342638,#46344c,#181020)",wiki:"Xintiandi"},
+    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",emoji:"🏢",bg:"linear-gradient(135deg,#181e30,#242c48,#2e3a5c,#101420)",wiki:"Lujiazui"}
   ]},
-  {id:"xian",name:"西安古城寻踪",emoji:"🏛️",color:"#60a870",colorHex:"#60a870",center:[34.280,108.960],zoom:12,
-   info:"两日穿越 · 周秦汉唐 · 约30 km",
+  {id:"xian",name:"西安古城寻踪",emoji:"🏛️",color:"#60a870",colorHex:"#60a870",center:[34.280,108.960],zoom:12,info:"两日穿越 · 周秦汉唐 · 约30 km",
    stops:[
-    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",emoji:"🗿",bg:"linear-gradient(135deg,#221e16,#342c20,#443828,#161208)",photo:"Terracotta_Army_Xian.jpg"},
-    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",emoji:"🔔",bg:"linear-gradient(135deg,#1c2618,#2a3624,#384830,#141c10)",photo:"Bell_Tower_of_Xian.jpg"},
-    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",emoji:"🍜",bg:"linear-gradient(135deg,#2a1e16,#3c2c1e,#4e3828,#1c120a)",photo:"Muslim_Quarter_Xian.jpg"},
-    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",emoji:"🛕",bg:"linear-gradient(135deg,#1a2216,#283420,#364428,#141a0e)",photo:"Giant_Wild_Goose_Pagoda_Xian.jpg"}
+    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",emoji:"🗿",bg:"linear-gradient(135deg,#221e16,#342c20,#443828,#161208)",wiki:"Terracotta_Army"},
+    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",emoji:"🔔",bg:"linear-gradient(135deg,#1c2618,#2a3624,#384830,#141c10)",wiki:"Bell_Tower_of_Xi'an"},
+    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",emoji:"🍜",bg:"linear-gradient(135deg,#2a1e16,#3c2c1e,#4e3828,#1c120a)",wiki:"Muslim_Quarter,_Xi'an"},
+    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",emoji:"🛕",bg:"linear-gradient(135deg,#1a2216,#283420,#364428,#141a0e)",wiki:"Giant_Wild_Goose_Pagoda"}
   ]}
 ];
-var cur,activeStop=-1,markers=[],lines=[],glows=[],step=-1,playing=false,timer=null,currentLayer=0,tileLayer=null;
+var cur,activeStop=-1,markers=[],lines=[],glows=[],step=-1,playing=false,timer=null,currentLayer=0,tileLayer=null,photoTimer=null,lastPhotoUrl="";
 var map=L.map("map",{center:[39.92,116.40],zoom:12,minZoom:3,zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:0,wheelPxPerZoomLevel:120,worldCopyJump:true});
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
-function setTile(index){
-  currentLayer=index;if(tileLayer)map.removeLayer(tileLayer);
-  var p=tileProviders[index],opts={maxZoom:19,attribution:p.attr};
-  if(p.subdomains)opts.subdomains=p.subdomains.split("");
-  tileLayer=L.tileLayer(p.src,opts).addTo(map);
-  document.querySelectorAll(".layer-btn").forEach(function(b,i){b.classList.toggle("active",i===index)});
-}
-var lc=document.getElementById("layerCtrl");
-tileProviders.forEach(function(p,i){var b=document.createElement("button");b.className="layer-btn"+(i===0?" active":"");b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;b.onclick=function(){setTile(i)};lc.appendChild(b)});
-setTile(0);
-function stopIcon(i,isA){var r=isA?40:32,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});}
+function setTile(index){currentLayer=index;if(tileLayer)map.removeLayer(tileLayer);var p=tileProviders[index],opts={maxZoom:19,attribution:p.attr};if(p.subdomains)opts.subdomains=p.subdomains.split("");tileLayer=L.tileLayer(p.src,opts).addTo(map);document.querySelectorAll(".layer-btn").forEach(function(b,i){b.classList.toggle("active",i===index)})}
+var lc=document.getElementById("layerCtrl");tileProviders.forEach(function(p,i){var b=document.createElement("button");b.className="layer-btn"+(i===0?" active":"");b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;b.onclick=function(){setTile(i)};lc.appendChild(b)});setTile(0);
+function stopIcon(i,isA){var r=isA?40:32,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]})}
 
-var photoTimer=null;
 function showLandmark(stop){
-  var banner=document.getElementById("landmarkBanner"),photo=document.getElementById("bannerPhoto"),grad=document.getElementById("bannerGradient"),loader=document.getElementById("photoLoader"),title=document.getElementById("bannerTitle"),loc=document.getElementById("bannerLoc"),emoji=document.getElementById("bannerEmoji");
-  title.textContent=stop.title;loc.textContent=stop.location;
-  if(emoji.textContent!==stop.emoji){emoji.textContent=stop.emoji}
+  var photo=document.getElementById("bannerPhoto"),grad=document.getElementById("bannerGradient"),loader=document.getElementById("photoLoader"),title=document.getElementById("bannerTitle"),loc=document.getElementById("bannerLoc"),emoji=document.getElementById("bannerEmoji");
+  title.textContent=stop.title;loc.textContent=stop.location;emoji.textContent=stop.emoji||"📍";
   grad.style.background=stop.bg;
-  banner.classList.add("no-photo");
-  if(stop.photo){
-    var url="https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(stop.photo)+"?width=800";
-    loader.classList.add("show");
-    clearTimeout(photoTimer);
+  photo.classList.remove("show");photo.style.backgroundImage="";
+  if(lastPhotoUrl)URL.revokeObjectURL(lastPhotoUrl);lastPhotoUrl="";
+  clearTimeout(photoTimer);
+  if(!stop.wiki)return;
+  var apiUrl="https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(stop.wiki);
+  loader.classList.add("show");
+  fetch(apiUrl).then(function(r){if(!r.ok)throw new Error("404");return r.json()}).then(function(data){
+    var src=data.thumbnail?data.thumbnail.source:null;
+    if(!src){photo.classList.remove("show");loader.classList.remove("show");return}
     var img=new Image();
-    img.onload=function(){photo.style.backgroundImage="url("+url+")";banner.classList.remove("no-photo");loader.classList.remove("show")};
+    img.onload=function(){photo.style.backgroundImage="url("+src+")";photo.classList.add("show");loader.classList.remove("show")};
     img.onerror=function(){loader.classList.remove("show")};
-    img.src=url;
-    photoTimer=setTimeout(function(){loader.classList.remove("show")},8000);
-  }
+    img.src=src;
+  }).catch(function(){loader.classList.remove("show")});
+  photoTimer=setTimeout(function(){loader.classList.remove("show")},10000);
 }
 function select(id){
   activeStop=-1;cur=routes.find(function(r){return r.id===id});
   document.querySelectorAll(".chip").forEach(function(c){c.classList.toggle("active",c.id==="chip-"+id)});
-  document.getElementById("routeName").textContent=cur.name;
-  document.getElementById("routeInfo").textContent=cur.info;
+  document.getElementById("routeName").textContent=cur.name;document.getElementById("routeInfo").textContent=cur.info;
   renderItinerary();renderMap();
   map.setView(cur.center,cur.zoom,{animate:true,duration:1});
   updateInfo();showLandmark(cur.stops[0]);
 }
-function renderItinerary(){
-  var el=document.getElementById("itinerary");el.innerHTML="";if(!cur)return;
-  cur.stops.forEach(function(s,i){var d=document.createElement("div");d.className="stop-item";d.id="stop-"+i;d.innerHTML='<span class="stop-num">'+(i+1)+'</span><div class="stop-title">'+s.title+'</div><div class="stop-loc">'+s.location+'</div>'+(s.desc?'<div class="stop-desc">'+s.desc+'</div>':"")+(s.tip?'<div class="stop-tip">'+s.tip+'</div>':"");d.onclick=function(){gotoStop(i)};el.appendChild(d)});
-}
-function renderMap(){
-  markers.forEach(function(m){map.removeLayer(m)});lines.forEach(function(l){map.removeLayer(l)});glows.forEach(function(g){map.removeLayer(g)});
-  markers=[];lines=[];glows=[];if(!cur)return;
-  var coords=cur.stops.map(function(s){return[s.lat,s.lng]});
-  for(var i=0;i<coords.length-1;i++){(function(p1,p2){
-    var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;
-    var ctrl=[mlat+Math.min(1.5,.3/Math.abs(p2[0]-p1[0]||.01)),mlng+(Math.random()-.5)*2];
-    var pts=[];for(var j=0;j<=50;j++){var t=j/50;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
-    glows.push(L.polyline(pts,{color:cur.colorHex,weight:6,opacity:.3,interactive:false,className:"route-line-glow"}).addTo(map));
-    lines.push(L.polyline(pts,{color:"#ffffff",weight:3,opacity:.8,dashArray:"12 8",interactive:false,className:"route-line-dash"}).addTo(map));
-  })(coords[i],coords[i+1])}
-  cur.stops.forEach(function(s,i){var a=i===activeStop;var m=L.marker([s.lat,s.lng],{icon:stopIcon(i,a)}).addTo(map);m.bindPopup('<div class="popup-inner"><div class="popup-title">📍 '+s.title+'</div><div class="popup-meta">'+s.location+(s.tip?' · '+s.tip:"")+'</div>'+(s.desc?'<div class="popup-desc">'+s.desc+'</div>':"")+'</div>',{maxWidth:300,closeButton:true,className:"custom-popup"});m.on("click",function(){gotoStop(i)});markers.push(m)});
-}
-function gotoStop(i){
-  if(!cur||i<0||i>=cur.stops.length)return;
-  activeStop=i;var s=cur.stops[i];
-  document.querySelectorAll(".stop-item").forEach(function(el,j){el.classList.toggle("active",j===i)});
-  var si=document.getElementById("stop-"+i);if(si)si.scrollIntoView({behavior:"smooth",block:"center"});
-  markers.forEach(function(m,j){m.setIcon(stopIcon(j,j===i));if(j===i)m.bringToFront()});
-  map.flyTo([s.lat,s.lng],15,{duration:1.2,easeLinearity:.25});
-  step=i;updateInfo();showLandmark(s);
-  var toast=document.getElementById("mapToast");toast.textContent=s.emoji+" "+s.title;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},2800);
-}
+function renderItinerary(){var el=document.getElementById("itinerary");el.innerHTML="";if(!cur)return;cur.stops.forEach(function(s,i){var d=document.createElement("div");d.className="stop-item";d.id="stop-"+i;d.innerHTML='<span class="stop-num">'+(i+1)+'</span><div class="stop-title">'+s.title+'</div><div class="stop-loc">'+s.location+'</div>'+(s.desc?'<div class="stop-desc">'+s.desc+'</div>':"")+(s.tip?'<div class="stop-tip">'+s.tip+'</div>':"");d.onclick=function(){gotoStop(i)};el.appendChild(d)})}
+function renderMap(){markers.forEach(function(m){map.removeLayer(m)});lines.forEach(function(l){map.removeLayer(l)});glows.forEach(function(g){map.removeLayer(g)});markers=[];lines=[];glows=[];if(!cur)return;var coords=cur.stops.map(function(s){return[s.lat,s.lng]});for(var i=0;i<coords.length-1;i++){(function(p1,p2){var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;var ctrl=[mlat+Math.min(1.5,.3/Math.abs(p2[0]-p1[0]||.01)),mlng+(Math.random()-.5)*2];var pts=[];for(var j=0;j<=50;j++){var t=j/50;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}glows.push(L.polyline(pts,{color:cur.colorHex,weight:6,opacity:.3,interactive:false,className:"route-line-glow"}).addTo(map));lines.push(L.polyline(pts,{color:"#ffffff",weight:3,opacity:.8,dashArray:"12 8",interactive:false,className:"route-line-dash"}).addTo(map))})(coords[i],coords[i+1])}cur.stops.forEach(function(s,i){var a=i===activeStop;var m=L.marker([s.lat,s.lng],{icon:stopIcon(i,a)}).addTo(map);m.bindPopup('<div class="popup-inner"><div class="popup-title">📍 '+s.title+'</div><div class="popup-meta">'+s.location+(s.tip?' · '+s.tip:"")+'</div>'+(s.desc?'<div class="popup-desc">'+s.desc+'</div>':"")+'</div>',{maxWidth:300,closeButton:true,className:"custom-popup"});m.on("click",function(){gotoStop(i)});markers.push(m)})}
+function gotoStop(i){if(!cur||i<0||i>=cur.stops.length)return;activeStop=i;var s=cur.stops[i];document.querySelectorAll(".stop-item").forEach(function(el,j){el.classList.toggle("active",j===i)});var si=document.getElementById("stop-"+i);if(si)si.scrollIntoView({behavior:"smooth",block:"center"});markers.forEach(function(m,j){m.setIcon(stopIcon(j,j===i));if(j===i)m.bringToFront()});map.flyTo([s.lat,s.lng],15,{duration:1.2,easeLinearity:.25});step=i;updateInfo();showLandmark(s);var toast=document.getElementById("mapToast");toast.textContent=s.emoji+" "+s.title;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},2800)}
 function updateInfo(){if(!cur){document.getElementById("playInfo").textContent="0/0";return}document.getElementById("playInfo").textContent=(step+1)+"/"+cur.stops.length}
 function start(){if(!cur)return;if(step>=cur.stops.length-1)step=-1;playing=true;document.getElementById("btnPlay").textContent="⏸";document.getElementById("btnPlay").classList.add("playing");advance()}
 function stop(){playing=false;if(timer)clearTimeout(timer);timer=null;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing")}
@@ -254,8 +216,7 @@ document.getElementById("btnPrev").onclick=function(){stop();if(cur&&step>0)goto
 document.getElementById("btnNext").onclick=function(){stop();if(cur&&step<cur.stops.length-1)gotoStop(step+1)};
 document.getElementById("btnPlay").onclick=function(){playing?stop():start()};
 document.addEventListener("keydown",function(ev){if(!cur)return;if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.stops.length-1)gotoStop(step+1)}if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)gotoStop(step-1)}if(ev.key===" "){ev.preventDefault();playing?stop():start()}});
-var rb=document.getElementById("routeBar");
-routes.forEach(function(r){var c=document.createElement("div");c.className="chip";c.id="chip-"+r.id;c.innerHTML='<div class="dot" style="background:'+r.color+'">'+r.emoji+'</div>'+r.name;c.onclick=function(){stop();select(r.id)};rb.appendChild(c)});
+var rb=document.getElementById("routeBar");routes.forEach(function(r){var c=document.createElement("div");c.className="chip";c.id="chip-"+r.id;c.innerHTML='<div class="dot" style="background:'+r.color+'">'+r.emoji+'</div>'+r.name;c.onclick=function(){stop();select(r.id)};rb.appendChild(c)});
 select("beijing");
 setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
