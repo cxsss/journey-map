@@ -186,15 +186,16 @@ function focus(i){
 function scroll(i){var items=document.querySelectorAll(".tl-item");if(items[i])items[i].scrollIntoView({behavior:"smooth",block:"center"})}
 function reset(){document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active")});markers.forEach(function(m,j){m.setIcon(makeIcon(data[j],j,false))})}
 function fit(){var coords=data.map(function(e){return[e.lat,e.lng]});if(coords.length)map.flyToBounds(L.latLngBounds(coords).pad(.2),{duration:1.2,maxZoom:6})}
-document.getElementById("btnOverview").onclick=function(){active=-1;reset();fit()};
+function showToast(text){var toast=document.getElementById("mapToast");toast.textContent=text;toast.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){toast.classList.remove("show")},2600)}
+document.getElementById("btnOverview").onclick=function(){active=-1;reset();fit();updateSummary()};
 var sidebar=document.getElementById("sidebar"),editor=document.getElementById("editor"),editing=false;
 document.getElementById("btnEdit").onclick=function(){editing=!editing;sidebar.classList.toggle("editing",editing);this.textContent=editing?"返回视图":"编辑数据";if(editing)editor.value=JSON.stringify(data,null,2)};
 document.getElementById("btnCancel").onclick=function(){editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"};
-document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTL();fit();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
+document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTL();fit();updateSummary();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
 document.getElementById("btnSample").onclick=function(){editor.value=JSON.stringify(sample,null,2)};
 document.getElementById("fileInput").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){editor.value=ev.target.result};r.readAsText(f)};
 document.getElementById("btnDownload").onclick=function(){var b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download="journey.json";a.click();URL.revokeObjectURL(u)};
-renderMap();renderTL();fit();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
+renderMap();renderTL();fit();updateSummary();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
 </body>
 </html>
