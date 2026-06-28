@@ -12,6 +12,8 @@ journey-site/
 ├── pivi-journey.html       # Pivi 风格旅程地图（地图样式+时间轴+统计）
 ```
 
+- [Pivi 风格旅程地图](pivi-journey.html) — 参考 Making History Sandbox 与 Pivi's travels 的地图样式、时间轴与统计视图
+
 ## 🚀 快速上线
 
 ### Netlify（最快）
