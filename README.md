@@ -20,6 +20,8 @@ journey-site/
 
 ### 在线访问
 - [轨迹地图](https://cxsss.github.io/journey-map/index.html)
+- [自定义历程](https://cxsss.github.io/journey-map/custom-journey.html)
+- [历史长廊](https://cxsss.github.io/journey-map/history-gallery.html)
 
 ### Netlify（最快）
 1. 打开 https://app.netlify.com/drop
