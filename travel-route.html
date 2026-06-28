@@ -20,12 +20,12 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .app-loading.hide{opacity:0;pointer-events:none}
 .loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.topbar{display:flex;align-items:center;padding:12px 24px;gap:8px;background:rgba(20,16,9,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative}
+.topbar{display:flex;align-items:center;padding:10px 20px;gap:6px;background:rgba(20,16,9,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative}
 .topbar::-webkit-scrollbar{height:0}
-.chip{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all .4s;font-size:14px;font-weight:400;color:var(--text-2);flex-shrink:0}
+.chip{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all .4s;font-size:13px;font-weight:400;color:var(--text-2);flex-shrink:0}
 .chip:hover{border-color:var(--border-strong);color:var(--text)}
 .chip.active{background:var(--gold-soft);border-color:rgba(212,164,76,.2);color:var(--gold)}
-.chip .dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.chip .dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .main{display:flex;flex:1;overflow:hidden;position:relative}
 .sidebar{width:350px;min-width:350px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
 .sidebar-head{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
@@ -48,29 +48,28 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .stop-tip{font-size:10px;color:var(--amber);margin-top:4px;padding:4px 8px;border-radius:8px;background:rgba(224,184,76,.06);display:inline-block}
 .stop-desc{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.4}
 .map-area{flex:1;position:relative}
-.landmark-banner{position:absolute;top:0;left:0;right:0;height:180px;z-index:3;overflow:hidden;background:var(--surface-2);border-bottom:1px solid var(--border);transition:height .5s cubic-bezier(.4,0,.2,1)}
-.landmark-banner .banner-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .6s ease,transform .8s ease}
-.landmark-banner .banner-bg.loading{opacity:0;transform:scale(1.03)}
-.landmark-banner .banner-bg.fallback{display:flex;align-items:center;justify-content:center;font-size:64px;opacity:1}
-.landmark-banner .landmark-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,16,9,.75) 0%,rgba(20,16,9,.25) 50%,rgba(20,16,9,.1) 100%);pointer-events:none}
+.landmark-banner{position:absolute;top:0;left:0;right:0;height:180px;z-index:3;overflow:hidden;border-bottom:1px solid var(--border);transition:background .8s ease}
+.landmark-banner .banner-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .5s ease}
+.landmark-banner .banner-emoji{font-size:56px;margin-bottom:4px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3));transition:transform .6s cubic-bezier(.34,1.56,.64,1)}
+.landmark-banner .banner-emoji.pop{transform:scale(1.15)}
+.landmark-banner .landmark-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,16,9,.8) 0%,rgba(20,16,9,.3) 55%,rgba(20,16,9,.05) 100%);pointer-events:none}
 .landmark-banner .landmark-label{position:absolute;bottom:12px;left:16px;font-family:"Noto Serif SC",serif;font-size:20px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:none;transition:all .5s}
-.landmark-banner .landmark-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .6s linear infinite;opacity:0;transition:opacity .3s}
-.landmark-banner .landmark-spinner.show{opacity:1}
+.landmark-banner .landmark-pattern{position:absolute;inset:0;opacity:.06;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
 #map{margin-top:180px;height:calc(100% - 180px);width:100%;background:var(--bg)}
-.map-overlay{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:10px;background:rgba(20,16,9,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:6px 14px;border-radius:22px;border:1px solid var(--border);pointer-events:auto}
-.map-ctrl{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .35s;color:var(--text-2)}
+.map-overlay{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:8px;background:rgba(20,16,9,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:5px 10px;border-radius:22px;border:1px solid var(--border);pointer-events:auto}
+.map-ctrl{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .35s;color:var(--text-2);flex-shrink:0}
 .map-ctrl:hover{border-color:var(--border-strong);color:var(--text)}
 .map-ctrl.playing{background:var(--gold-soft);border-color:rgba(212,164,76,.3);color:var(--gold)}
 .map-ctrl:disabled{opacity:.3;cursor:default}
-.map-info{font-size:11px;color:var(--text-2);font-weight:400;min-width:80px;text-align:center}
-.map-top{position:absolute;top:196px;left:16px;z-index:5;display:flex;gap:6px;flex-wrap:wrap}
-.layer-ctrl{display:flex;gap:4px;background:rgba(20,16,9,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:4px;border-radius:20px;border:1px solid var(--border);flex-wrap:wrap}
-.layer-btn{width:32px;height:32px;border-radius:50%;border:1px solid transparent;background:rgba(255,255,255,.03);cursor:pointer;font-size:14px;transition:all .35s;display:flex;align-items:center;justify-content:center;padding:0;position:relative}
+.map-info{font-size:10px;color:var(--text-2);font-weight:400;min-width:60px;text-align:center}
+.map-top{position:absolute;top:192px;left:12px;z-index:5;display:flex;gap:4px}
+.layer-ctrl{display:flex;gap:3px;background:rgba(20,16,9,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:3px;border-radius:18px;border:1px solid var(--border);flex-wrap:wrap;max-width:148px}
+.layer-btn{width:28px;height:28px;border-radius:50%;border:1px solid transparent;background:rgba(255,255,255,.03);cursor:pointer;font-size:12px;transition:all .35s;display:flex;align-items:center;justify-content:center;padding:0;position:relative;flex-shrink:0}
 .layer-btn:hover{border-color:var(--border-strong)}
 .layer-btn.active{background:var(--gold-soft);border-color:rgba(212,164,76,.2)}
-.layer-btn .tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(2px);font-size:9px;white-space:nowrap;color:var(--text-2);opacity:0;pointer-events:none;transition:all .3s;font-family:inherit;font-weight:400}
+.layer-btn .tip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%) translateY(2px);font-size:9px;white-space:nowrap;color:var(--text-2);opacity:0;pointer-events:none;transition:all .3s;font-family:inherit;font-weight:400}
 .layer-btn:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(8px);z-index:6;font-size:15px;font-weight:600;background:rgba(20,16,9,.92);border:1px solid rgba(212,164,76,.2);padding:8px 18px;border-radius:18px;pointer-events:none;opacity:0;transition:all .5s;color:var(--gold)}
+.toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);z-index:6;font-size:14px;font-weight:600;background:rgba(20,16,9,.92);border:1px solid rgba(212,164,76,.2);padding:6px 16px;border-radius:16px;pointer-events:none;opacity:0;transition:all .5s;color:var(--gold)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .route-marker{background:transparent!important;border:none!important}
 .route-marker .marker-body{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--gold-border);box-shadow:0 0 10px rgba(212,175,55,.12),0 2px 8px rgba(0,0,0,.35);transition:all .3s;position:relative}
@@ -85,9 +84,9 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .popup-title{font-weight:600;font-size:13px;margin-bottom:4px}
 .popup-meta{font-size:10px;color:var(--text-3);margin-bottom:6px}
 .popup-desc{font-size:11px;color:var(--text-2)}
-.btn-back{position:absolute;top:196px;right:16px;z-index:5;padding:7px 14px;border-radius:16px;border:1px solid var(--border);background:rgba(20,16,9,.85);color:var(--text-2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .35s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.btn-back{position:absolute;top:192px;right:12px;z-index:5;padding:5px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(20,16,9,.85);color:var(--text-2);font-size:11px;cursor:pointer;font-family:inherit;transition:all .35s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .btn-back:hover{border-color:var(--border-strong);color:var(--text)}
-@media(max-width:768px){.sidebar{width:260px;min-width:260px}.landmark-banner{height:140px}#map{margin-top:140px;height:calc(100% - 140px)}.map-top{top:156px}.btn-back{top:156px}}
+@media(max-width:768px){.sidebar{width:260px;min-width:260px}.landmark-banner{height:140px}#map{margin-top:140px;height:calc(100% - 140px)}.map-top{top:152px}.btn-back{top:152px}.landmark-banner .banner-emoji{font-size:42px}}
 </style>
 </head>
 <body>
@@ -103,10 +102,11 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 <div class="itinerary" id="itinerary"></div>
 </div>
 <div class="map-area">
-<div class="landmark-banner" id="landmarkBanner">
-<div class="banner-bg fallback" id="bannerFallback">🏛️</div>
-<div class="banner-bg loading" id="bannerImg"></div>
-<div class="landmark-spinner" id="landmarkSpinner"></div>
+<div class="landmark-banner" id="landmarkBanner" style="background:linear-gradient(135deg,#1a1410 0%,#2a1f14 30%,#3a2a18 60%,#1a1410 100%)">
+<div class="landmark-pattern"></div>
+<div class="banner-content" id="bannerContent">
+<div class="banner-emoji" id="bannerEmoji">🏛️</div>
+</div>
 <div class="landmark-shade"></div>
 <div class="landmark-label" id="landmarkLabel"></div>
 </div>
@@ -132,32 +132,37 @@ var tileProviders=[
   {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
   {name:"街道",icon:"🏙️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
 ];
+var themeGradients={
+  "beijing":[["#2a1a14","#3a2418","#4a2e1c","#2a1a14"]],
+  "shanghai":[["#1a1a24","#242038","#2a2040","#1a1a24"]],
+  "xian":[["#1a2418","#243018","#2e3a1c","#1a2418"]]
+};
 var routes=[
   {id:"beijing",name:"北京精华游",emoji:"🏯",color:"#d4a44c",center:[39.920,116.410],zoom:12,
-   info:"三天五步 · 古都之心 · 约48 km",
+   info:"三天五步 · 古都之心 · 约48 km",theme:"beijing",
    stops:[
-    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",img:"https://source.unsplash.com/800x400/?tiananmen+square+beijing",emoji:"🏛️"},
-    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",img:"https://source.unsplash.com/800x400/?forbidden+city+beijing",emoji:"🏯"},
-    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",img:"https://source.unsplash.com/800x400/?temple+of+heaven+beijing",emoji:"🛕"},
-    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",img:"https://source.unsplash.com/800x400/?summer+palace+beijing",emoji:"🏞️"},
-    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",img:"https://source.unsplash.com/800x400/?great+wall+of+china",emoji:"🏔️"},
-    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",img:"https://source.unsplash.com/800x400/?ancient+chinese+village+beijing",emoji:"🏘️"}
+    {title:"天安门广场",location:"东城区",lat:39.906,lng:116.398,desc:"升旗降旗、人民英雄纪念碑、国家博物馆。建议早晨6:00抵达看升旗。",tip:"→ 步行 800m",emoji:"🏛️",bg:["#3a1a18","#5a2420","#4a1e18","#2a1412"]},
+    {title:"故宫",location:"东城区",lat:39.918,lng:116.397,desc:"世界最大木结构古建筑群。红墙金瓦，中轴线三大殿、御花园。预约制，参观约3h。",tip:"→ 地铁 4站",emoji:"🏯",bg:["#3a2018","#5a2a1c","#7a3420","#2a1812"]},
+    {title:"天坛公园",location:"东城区",lat:39.882,lng:116.407,desc:"明清祭天之所。九音壁、祈年殿、圆丘。晨练的大爷大妈是一景。",tip:"→ 地铁换乘",emoji:"🛕",bg:["#1a2430","#203048","#283a50","#141c24"]},
+    {title:"颐和园",location:"海淀区",lat:39.996,lng:116.287,desc:"慈禧为母亲贺礼而建。石舫、长廊、佛香阁。夏季荷花满池。",tip:"→ 开车 70km",emoji:"🏞️",bg:["#1a2818","#243820","#2e4828","#182014"]},
+    {title:"八达岭长城",location:"延庆区",lat:40.358,lng:116.020,desc:"北线精华段。滑车上去步行下来，雄伟险峻。秋季红叶最美。",tip:"✧ 终点",emoji:"🏔️",bg:["#1a201c","#283028","#384838","#141814"]},
+    {title:"延庆柳沟古镇",location:"延庆区",lat:40.463,lng:115.975,desc:"长城脚下的明清古镇。水乡江南风格，冰灯节最美。建议住一晚。",tip:"",emoji:"🏘️",bg:["#1c1a18","#2a2420","#383028","#181412"]}
   ]},
   {id:"shanghai",name:"上海魔都漫步",emoji:"🏙️",color:"#b85a4a",center:[31.240,121.480],zoom:12,
-   info:"一日浮光 · 浦西到浦东 · 约15 km",
+   info:"一日浮光 · 浦西到浦东 · 约15 km",theme:"shanghai",
    stops:[
-    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",img:"https://source.unsplash.com/800x400/?the+bund+shanghai",emoji:"🌃"},
-    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",img:"https://source.unsplash.com/800x400/?nanjing+road+shanghai",emoji:"🛍️"},
-    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",img:"https://source.unsplash.com/800x400/?xintiandi+shanghai",emoji:"🍸"},
-    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",img:"https://source.unsplash.com/800x400/?lujiazui+shanghai+skyline",emoji:"🏢"}
+    {title:"外滩",location:"黄浦区",lat:31.240,lng:121.490,desc:"万国建筑博览群。江对岸陆家嘴、东方明珠。夜景绝佳。",tip:"→ 步行沿江",emoji:"🌃",bg:["#181a2a","#202440","#283058","#141620"]},
+    {title:"南京路步行街",location:"黄浦区",lat:31.233,lng:121.475,desc:"百年商业街。石库门建筑、老字号、鲜肉月饼。",tip:"→ 地铁",emoji:"🛍️",bg:["#241820","#382430","#482c38","#181418"]},
+    {title:"新天地",location:"黄浦区",lat:31.220,lng:121.474,desc:"石库门旁的潮流十里洋场。年轻人聚集地。",tip:"→ 地铁过江",emoji:"🍸",bg:["#201824","#302438","#3c2c48","#181420"]},
+    {title:"陆家嘴",location:"浦东新区",lat:31.239,lng:121.500,desc:"中国最高楼。上海中心、环球金融。观景层看全城。",tip:"",emoji:"🏢",bg:["#1a202c","#243048","#2e3c58","#141824"]}
   ]},
   {id:"xian",name:"西安古城寻踪",emoji:"🏛️",color:"#5a8a6a",center:[34.280,108.960],zoom:12,
-   info:"两日穿越 · 周秦汉唐 · 约30 km",
+   info:"两日穿越 · 周秦汉唐 · 约30 km",theme:"xian",
    stops:[
-    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",img:"https://source.unsplash.com/800x400/?terracotta+warriors+xian",emoji:"🗿"},
-    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",img:"https://source.unsplash.com/800x400/?bell+tower+xian",emoji:"🔔"},
-    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",img:"https://source.unsplash.com/800x400/?muslim+quarter+xian+food",emoji:"🍜"},
-    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",img:"https://source.unsplash.com/800x400/?giant+wild+goose+pagoda+xian",emoji:"🛕"}
+    {title:"兵马俑",location:"临潼区",lat:34.385,lng:109.273,desc:"世界第八大奇迹。秦始皇陵。千人千面、青铜马车。",tip:"→ 返城",emoji:"🗿",bg:["#201c18","#302820","#403428","#181410"]},
+    {title:"钟楼",location:"碑林区",lat:34.261,lng:108.942,desc:"明代古城地标。晨钟暮鼓、青砖绿瓦。灯光秀美轮美奂。",tip:"→ 步行",emoji:"🔔",bg:["#1c2418","#283420","#344028","#141c10"]},
+    {title:"回民街",location:"碑林区",lat:34.263,lng:108.946,desc:"西安小吃天花板。羊肉泡馍、肉夹馍、羊肉串、柿子饼。",tip:"→ 地铁",emoji:"🍜",bg:["#281c18","#3a2418","#482c1c","#1c1410"]},
+    {title:"大雁塔",location:"雁塔区",lat:34.219,lng:108.960,desc:"唐代建，玄奘取经归藏之地。韩国风翻修重建。大唐不夜城旁。",tip:"",emoji:"🛕",bg:["#1a2018","#243020","#2e4028","#141810"]}
   ]}
 ];
 var cur,activeStop=-1,markers=[],lines=[],step=-1,playing=false,timer=null,currentLayer=0,tileLayer=null;
@@ -184,41 +189,21 @@ tileProviders.forEach(function(p,i){
 setTile(0);
 function stopIcon(i,isA){var r=isA?38:30,c=isA?"var(--amber)":"var(--gold-border)";return L.divIcon({className:"route-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+'">'+(i+1)+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});}
 
-var currentImgUrl="";
-function showLandmark(imgUrl,label,emoji){
-  var bg=document.getElementById("bannerImg"),fallback=document.getElementById("bannerFallback"),spinner=document.getElementById("landmarkSpinner"),lbl=document.getElementById("landmarkLabel");
-  if(!imgUrl || imgUrl===currentImgUrl){lbl.textContent=label||"";return}
-  currentImgUrl=imgUrl;lbl.textContent=label||"";
-  spinner.classList.add("show");
-  bg.classList.add("loading");bg.style.backgroundImage="";
-  fallback.style.opacity="1";fallback.textContent=emoji||"🏛️";
-  var pre=new Image();
-  pre.onload=function(){
-    bg.style.backgroundImage="url("+imgUrl+")";
-    bg.classList.remove("loading");
-    fallback.style.opacity="0";
-    spinner.classList.remove("show");
-  };
-  pre.onerror=function(){
-    bg.classList.remove("loading");
-    spinner.classList.remove("show");
-    fallback.style.opacity="1";
-    fallback.textContent=emoji||"🏛️";
-    console.log("Image failed, showing fallback for: "+label);
-  };
-  pre.src=imgUrl;
-  setTimeout(function(){if(!pre.complete){pre.src="";spinner.classList.remove("show");fallback.style.opacity="1";fallback.textContent=emoji||"🏛️"}},8000);
+function showLandmark(bgArr,label,emoji){
+  var banner=document.getElementById("landmarkBanner"),emojiEl=document.getElementById("bannerEmoji"),lbl=document.getElementById("landmarkLabel");
+  if(bgArr&&bgArr.length){banner.style.background="linear-gradient(135deg,"+bgArr.join(",")+")"}
+  lbl.textContent=label||"";
+  if(emojiEl.textContent!==emoji){emojiEl.textContent=emoji||"🏛️";emojiEl.classList.add("pop");setTimeout(function(){emojiEl.classList.remove("pop")},600)}
 }
-
 function select(id){
-  activeStop=-1;cur=routes.find(function(r){return r.id===id});currentImgUrl="";
+  activeStop=-1;cur=routes.find(function(r){return r.id===id});
   document.querySelectorAll(".chip").forEach(function(c){c.classList.toggle("active",c.id==="chip-"+id)});
   document.getElementById("routeName").textContent=cur.name;
   document.getElementById("routeInfo").textContent=cur.info;
   renderItinerary();renderMap();
   map.setView(cur.center,cur.zoom,{animate:true,duration:1});
   updateInfo();
-  if(cur.stops.length>0){var s=cur.stops[0];showLandmark(s.img,s.title,s.emoji)}
+  var s=cur.stops[0];showLandmark(s.bg,s.title,s.emoji);
 }
 function renderItinerary(){
   var el=document.getElementById("itinerary");el.innerHTML="";
@@ -255,7 +240,7 @@ function gotoStop(i){
   markers.forEach(function(m,j){m.setIcon(stopIcon(j,j===i));if(j===i)m.bringToFront()});
   map.flyTo([s.lat,s.lng],15,{duration:.8});
   step=i;updateInfo();
-  showLandmark(s.img,s.title,s.emoji);
+  showLandmark(s.bg,s.title,s.emoji);
   var toast=document.getElementById("mapToast");
   toast.textContent="📍 "+s.title;
   toast.classList.add("show");clearTimeout(toast._t);
