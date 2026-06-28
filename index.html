@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#141009">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&amp;family=Noto+Sans+SC:wght@300;400;500;600;700&amp;family=Noto+Serif+SC:wght@600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 :root{--bg:#141009;--surface:#1e1812;--border:rgba(180,150,110,.08);--border-strong:rgba(180,150,110,.14);--text:#e8dfd2;--text-2:#a89880;--text-3:#7a6b58;--gold:#d4a44c;--gold-border:#c4963e;--rose:#b85a4a;--green:#5a8a6a}
@@ -18,81 +18,51 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .app-loading.hide{opacity:0;pointer-events:none}
 .loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.container{width:100%;max-width:880px;padding:60px 28px;display:flex;flex-direction:column;align-items:center;gap:48px;position:relative;z-index:1}
-.hero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
-.hero-icon{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,rgba(212,164,76,.12),rgba(212,164,76,.03));border:1px solid rgba(212,164,76,.15);display:flex;align-items:center;justify-content:center;font-size:28px}
-.hero h1{font-family:"Noto Serif SC",serif;font-size:40px;font-weight:900;letter-spacing:6px;background:linear-gradient(180deg,#ece2d0,#d4c8b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero .sub{font-size:14px;font-weight:400;color:var(--text-2);letter-spacing:3px}
-.sep{width:1px;height:36px;background:linear-gradient(180deg,transparent,var(--border),transparent)}
-.cards{display:flex;gap:16px;width:100%;flex-wrap:wrap}
-.card{flex:1;min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px 24px;text-decoration:none;color:var(--text);transition:all .4s;position:relative;overflow:hidden}
-.card:hover{transform:translateY(-2px);border-color:var(--border-strong)}
-.card.travel:hover{box-shadow:0 0 0 1px rgba(90,138,106,.08),0 12px 36px rgba(90,138,106,.06)}
-.card.journey:hover{box-shadow:0 0 0 1px rgba(212,164,76,.08),0 12px 36px rgba(212,164,76,.06)}
-.card.history:hover{box-shadow:0 0 0 1px rgba(184,90,74,.08),0 12px 36px rgba(184,90,74,.06)}
-.card-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px}
-.card .icon-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-.card.travel .icon-wrap{background:rgba(90,138,106,.1);color:var(--green)}
-.card.journey .icon-wrap{background:rgba(212,164,76,.1);color:var(--gold)}
-.card.history .icon-wrap{background:rgba(184,90,74,.1);color:var(--rose)}
-.card h2{font-family:"Noto Serif SC",serif;font-size:16px;font-weight:700;letter-spacing:1px;color:#dcc8a8}
-.card p{font-size:12px;font-weight:400;color:var(--text-2);line-height:1.6}
-.card .tags{display:flex;gap:6px;flex-wrap:wrap}
-.card .tag{font-size:9px;font-weight:600;padding:3px 8px;border-radius:5px;letter-spacing:.5px}
-.card.travel .tag{background:rgba(90,138,106,.08);color:var(--green)}
-.card.journey .tag{background:rgba(212,164,76,.08);color:var(--gold)}
-.card.history .tag{background:rgba(184,90,74,.08);color:var(--rose)}
-.card .arrow{position:absolute;bottom:22px;right:22px;width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-3);transition:all .4s;opacity:0;transform:translateX(-4px)}
-.card:hover .arrow{opacity:1;transform:translateX(0)}
-.card.travel:hover .arrow{border-color:rgba(90,138,106,.3);color:var(--green)}
-.card.journey:hover .arrow{border-color:rgba(212,164,76,.3);color:var(--gold)}
-.card.history:hover .arrow{border-color:rgba(184,90,74,.3);color:var(--rose)}
-.footer{font-size:10px;font-weight:400;color:var(--text-3);text-align:center}
-.footer .sep2{margin:0 6px;color:rgba(180,150,110,.08)}
-@media(max-width:640px){.hero h1{font-size:30px}.container{padding:40px 16px;gap:32px}}
+.container{position:relative;z-index:1;width:100%;max-width:960px;padding:40px 24px}
+.header{text-align:center;margin-bottom:48px}
+.header h1{font-family:"Noto Serif SC",serif;font-size:38px;font-weight:900;color:#dcc8a8;letter-spacing:2px;margin-bottom:8px}
+.header .sub{font-size:14px;color:var(--text-3);letter-spacing:4px;font-weight:400}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;cursor:pointer;transition:all .4s;text-decoration:none;display:block;position:relative;overflow:hidden}
+.card:hover{border-color:var(--border-strong);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.card:hover .card-arrow{opacity:1;transform:translateX(0)}
+.card-icon{font-size:36px;margin-bottom:16px;display:block}
+.card h2{font-family:"Noto Serif SC",serif;font-size:20px;font-weight:700;color:#dcc8a8;margin-bottom:6px}
+.card p{font-size:13px;color:var(--text-3);line-height:1.5}
+.card-arrow{position:absolute;right:20px;bottom:20px;font-size:18px;color:var(--gold);opacity:0;transform:translateX(-8px);transition:all .4s}
+.card.accent-gold{border-top:2px solid var(--gold)}
+.card.accent-rose{border-top:2px solid var(--rose)}
+.card.accent-green{border-top:2px solid var(--green)}
+@media(max-width:640px){.header h1{font-size:26px}.cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="container">
-  <div class="hero">
-    <div class="hero-icon">🗺️</div>
-    <h1>轨迹地图</h1>
-    <p class="sub">Journey Map</p>
-  </div>
-  <div class="sep"></div>
-  <div class="cards">
-    <a href="travel-route.html" class="card travel">
-      <div class="card-inner">
-        <div class="icon-wrap">🌍</div>
-        <h2>旅游路线</h2>
-        <p>城市精华攻略。北京、上海、西安——地图式旅行指南。</p>
-        <div class="tags"><span class="tag">多城市</span><span class="tag">细粒度</span><span class="tag">攻略</span></div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-    <a href="custom-journey.html" class="card journey">
-      <div class="card-inner">
-        <div class="icon-wrap">🧭</div>
-        <h2>自定义历程</h2>
-        <p>绘制专属轨迹。多底图切换、divIcon 标记与金色视觉主题。</p>
-        <div class="tags"><span class="tag">多底图</span><span class="tag">JSON 编辑</span><span class="tag">导出</span></div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-    <a href="history-gallery.html" class="card history">
-      <div class="card-inner">
-        <div class="icon-wrap">📜</div>
-        <h2>历史长廊</h2>
-        <p>穿越千年时空。多人物切换、自动漫游动画，融合金色历史质感。</p>
-        <div class="tags"><span class="tag">自动播放</span><span class="tag">多人物</span><span class="tag">动画漫游</span></div>
-      </div>
-      <div class="arrow">→</div>
-    </a>
-  </div>
-  <div class="footer">
-    Leaflet <span class="sep2">·</span> OpenStreetMap <span class="sep2">·</span> CartoDB <span class="sep2">·</span> Esri <span class="sep2">·</span> Stamen
-  </div>
+<div class="header">
+<h1>轨迹地图</h1>
+<div class="sub">LIFE JOURNEY MAP</div>
+</div>
+<div class="cards">
+<a href="travel-route.html" class="card accent-gold">
+<span class="card-icon">🗺️</span>
+<h2>旅游路线</h2>
+<p>精选城市旅游攻略，站到站导航，细粒度行程规划。</p>
+<span class="card-arrow">→</span>
+</a>
+<a href="custom-journey.html" class="card accent-rose">
+<span class="card-icon">✨</span>
+<h2>自定义历程</h2>
+<p>创建你自己的旅程轨迹，导入/导出 JSON 数据。</p>
+<span class="card-arrow">→</span>
+</a>
+<a href="history-gallery.html" class="card accent-green">
+<span class="card-icon">📜</span>
+<h2>历史长廊</h2>
+<p>历史人物轨迹播放，感受时间与空间的交错。</p>
+<span class="card-arrow">→</span>
+</a>
+</div>
 </div>
 <script>setTimeout(function(){document.getElementById("loading").classList.add("hide")},300)</script>
 </body>

@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0a0a12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&amp;family=Noto+Sans+SC:wght@300;400;500;600;700&amp;family=Noto+Serif+SC:wght@600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -28,109 +28,111 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .chip .dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .main{display:flex;flex:1;overflow:hidden;position:relative}
 .sidebar{width:340px;min-width:340px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
-.sidebar-head{padding:14px 20px 10px;border-bottom:1px solid var(--border)}
+.sidebar-head{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
 .sidebar-head .kicker{font-size:10px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:2px}
 .sidebar-head h2{font-family:"Noto Serif SC",serif;font-size:17px;font-weight:700;letter-spacing:2px;color:#dcc8a8}
-.sidebar-head .bio{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.5}
+.sidebar-head .info{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.4}
 .timeline{flex:1;overflow-y:auto;padding:8px 12px 12px 18px;scroll-behavior:smooth}
-.tl-item{position:relative;padding:11px 0 11px 22px;cursor:pointer;border-radius:6px;margin:1px 0;transition:all .4s}
-.tl-item:hover{background:rgba(255,255,255,.02)}
+.tl-item{position:relative;padding:11px 0 11px 32px;cursor:pointer;border-radius:8px;margin:1px 0;transition:all .4s}
+.tl-item:hover{background:rgba(180,150,110,.03)}
 .tl-item.active{background:var(--gold-soft)}
-.tl-item.done{opacity:.5}
-.tl-item::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border)}
-.tl-item:first-child::before{top:17px}
-.tl-item:last-child::before{bottom:calc(100% - 17px)}
-.tl-item::after{content:"";position:absolute;left:2px;top:18px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--border-strong);transition:all .4s;z-index:1}
-.tl-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(220,154,92,.5);transform:scale(1.3)}
-.tl-item.done::after{border-color:var(--gold);opacity:.4}
-.tl-step{position:absolute;left:-14px;top:14px;font-size:8px;font-weight:700;color:var(--text-3);width:16px;text-align:center}
-.tl-date{font-size:9px;font-weight:500;color:var(--text-3);margin-bottom:2px;letter-spacing:.5px}
-.tl-title{font-size:12px;font-weight:500;line-height:1.4}
-.tl-loc{font-size:10px;font-weight:400;color:var(--text-2);margin-top:2px}
-.map-wrap{flex:1;position:relative}
-#map{width:100%;height:100%;filter:brightness(1) contrast(100%)}
-.layer-ctrl{position:absolute;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:2px;background:rgba(30,24,18,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:10px;padding:4px}
-.layer-btn{width:34px;height:34px;border:1px solid transparent;border-radius:7px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .3s;color:var(--text-3);padding:0;position:relative}
-.layer-btn:hover{border-color:var(--border-strong);background:rgba(255,255,255,.03)}
-.layer-btn.active{border-color:var(--gold-border);background:rgba(212,175,55,.08);color:var(--gold);box-shadow:0 0 12px rgba(212,175,55,.06)}
-.layer-btn .tip{position:absolute;right:42px;background:rgba(30,24,18,.94);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;white-space:nowrap;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .2s}
-.layer-btn:hover .tip{opacity:1}
-.ctrl-bar{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:6px;align-items:center;background:rgba(30,24,18,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:14px;padding:8px 14px}
-.ctrl-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .3s}
-.ctrl-btn:hover{border-color:var(--border-strong);color:var(--text)}
-.ctrl-btn.play{width:34px;height:34px;border-radius:50%;background:rgba(212,164,76,.12);border-color:rgba(212,164,76,.25);color:var(--gold);font-size:14px}
-.ctrl-btn.play:hover{border-color:rgba(212,164,76,.4);background:rgba(212,164,76,.15)}
-.ctrl-btn.play.playing{background:rgba(224,184,76,.15);border-color:rgba(224,184,76,.4);color:var(--amber)}
-.ctrl-info{font-size:10px;color:var(--text-3);padding:0 6px;min-width:40px;text-align:center}
-.map-info{position:absolute;top:66px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(30,24,18,.8);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:8px;padding:5px 14px;font-size:10px;color:var(--text-3);pointer-events:none}
-#mapToast{position:absolute;top:96px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(30,24,18,.85);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:10px;padding:8px 18px;font-size:12px;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .4s}
-#mapToast.show{opacity:1}
+.tl-item.done .tl-step{background:rgba(212,164,76,.25);color:var(--gold)}
+.tl-item.active .tl-step{background:var(--gold);color:var(--bg);transform:scale(1.15);box-shadow:0 0 12px rgba(212,164,76,.4)}
+.tl-item::before{content:"";position:absolute;left:15px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item:first-child::before{top:20px}
+.tl-item:last-child::before{bottom:calc(100% - 20px)}
+.tl-step{position:absolute;left:7px;top:16px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;border:2px solid var(--border-strong);background:var(--bg);transition:all .4s;z-index:1;color:var(--text-3)}
+.tl-date{font-size:10px;font-weight:500;color:var(--text-3);margin-bottom:2px}
+.tl-title{font-size:13px;font-weight:500;line-height:1.4}
+.tl-loc{font-size:11px;font-weight:400;color:var(--text-2);margin-top:2px}
+.map-area{flex:1;position:relative}
+#map{width:100%;height:100%;background:var(--bg)}
+.map-overlay{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:10px;background:rgba(20,16,9,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:6px 14px;border-radius:22px;border:1px solid var(--border);pointer-events:auto}
+.map-ctrl{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .35s;color:var(--text-2)}
+.map-ctrl:hover{border-color:var(--border-strong);color:var(--text)}
+.map-ctrl.playing{background:var(--gold-soft);border-color:rgba(212,164,76,.3);color:var(--gold)}
+.map-ctrl:disabled{opacity:.3;cursor:default}
+.map-info{font-size:11px;color:var(--text-2);font-weight:400;min-width:80px;text-align:center}
+.map-top{position:absolute;top:16px;left:16px;z-index:5;display:flex;gap:6px;flex-wrap:wrap}
+.layer-ctrl{display:flex;gap:4px;background:rgba(20,16,9,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:4px;border-radius:20px;border:1px solid var(--border)}
+.layer-btn{width:32px;height:32px;border-radius:50%;border:1px solid transparent;background:rgba(255,255,255,.03);cursor:pointer;font-size:14px;transition:all .35s;display:flex;align-items:center;justify-content:center;padding:0;position:relative}
+.layer-btn:hover{border-color:var(--border-strong)}
+.layer-btn.active{background:var(--gold-soft);border-color:rgba(212,164,76,.2)}
+.layer-btn .tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(2px);font-size:9px;white-space:nowrap;color:var(--text-2);opacity:0;pointer-events:none;transition:all .3s;font-family:inherit;font-weight:400}
+.layer-btn:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(8px);z-index:6;font-size:15px;font-weight:600;background:rgba(20,16,9,.92);border:1px solid rgba(212,164,76,.2);padding:8px 18px;border-radius:18px;pointer-events:none;opacity:0;transition:all .5s;color:var(--gold)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .journey-marker{background:transparent!important;border:none!important}
 .journey-marker .marker-body{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid var(--gold-border);box-shadow:0 0 10px rgba(212,175,55,.12),0 2px 6px rgba(0,0,0,.35);transition:all .3s;position:relative}
 .journey-marker .marker-body.active{width:34px;height:34px;font-size:15px;border-color:#f0c040;box-shadow:0 0 20px rgba(240,192,64,.3),0 2px 10px rgba(0,0,0,.45)}
-.traveler{width:14px;height:14px;border-radius:50%;background:var(--amber);box-shadow:0 0 18px var(--amber),0 0 36px rgba(240,192,64,.5);transform:translate(-50%,-50%)}
-.leaflet-popup-content-wrapper{padding:0;border-radius:10px!important;background:rgba(30,24,18,.94)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-strong);overflow:hidden}
-.leaflet-popup-content{margin:0!important;min-width:160px!important;width:auto!important}
-.leaflet-popup-content .popup-inner{padding:14px 16px}
-.leaflet-popup-content .popup-title{font-size:14px;font-weight:600;color:#dcc8a8;margin-bottom:2px}
-.leaflet-popup-content .popup-meta{font-size:10px;color:var(--text-3);letter-spacing:.5px}
-.leaflet-popup-content .popup-desc{font-size:11px;color:var(--text-2);line-height:1.5;margin-top:6px}
-.leaflet-popup-tip-container{opacity:0!important}
-.leaflet-popup-close-button{color:var(--text-3)!important;top:6px!important;right:6px!important;font-size:14px!important}
-.leaflet-popup-close-button:hover{color:var(--text)!important}
-/* animated dash */
+.traveler-marker{background:transparent!important;border:none!important}
+.traveler-marker .traveler-dot{width:14px;height:14px;border-radius:50%;border:2px solid #f0c040;box-shadow:0 0 16px rgba(240,192,64,.6);animation:pulse .8s ease infinite alternate}
+@keyframes pulse{to{transform:scale(1.3)}}
 .journey-line{stroke-dasharray:6 8;animation:dashflow 1s linear infinite}
-@keyframes dashflow{to{stroke-dashoffset:-30}}
+@keyframes dashflow{to{stroke-dashoffset:-14}}
+.custom-popup .leaflet-popup-content-wrapper{background:rgba(30,24,18,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border-strong);border-radius:10px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.35);padding:0}
+.custom-popup .leaflet-popup-content{margin:12px 16px;font-family:inherit;font-size:13px;line-height:1.5}
+.custom-popup .leaflet-popup-tip{display:none}
+.custom-popup .leaflet-popup-close-button{color:var(--text-3)!important;font-size:18px!important;font-weight:300;top:6px!important;right:10px!important}
+.popup-title{font-weight:600;font-size:13px;margin-bottom:4px}
+.popup-meta{font-size:10px;color:var(--text-3);margin-bottom:6px}
+.popup-desc{font-size:11px;color:var(--text-2)}
+.btn-back{position:absolute;top:16px;right:16px;z-index:5;padding:7px 14px;border-radius:16px;border:1px solid var(--border);background:rgba(20,16,9,.85);color:var(--text-2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .35s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.btn-back:hover{border-color:var(--border-strong);color:var(--text)}
+@media(max-width:768px){.sidebar{width:260px;min-width:260px}}
 </style>
 </head>
 <body>
 <div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="topbar" id="figureBar"></div>
 <div class="main">
-  <div class="sidebar">
-    <div class="sidebar-head">
-      <div class="kicker">History</div>
-      <h2 id="figureName">选择人物</h2>
-      <div class="bio" id="figureBio"></div>
-    </div>
-    <div class="timeline" id="timeline"></div>
-  </div>
-  <div class="map-wrap">
-    <div id="map"></div>
-    <div class="layer-ctrl" id="layerCtrl"></div>
-    <div class="map-info" id="mapInfo"></div>
-    <div id="mapToast"></div>
-    <div class="ctrl-bar">
-      <button class="ctrl-btn" id="btnPrev">◄</button>
-      <button class="ctrl-btn play" id="btnPlay">►</button>
-      <button class="ctrl-btn" id="btnNext">►</button>
-      <span class="ctrl-info" id="playInfo">0/0</span>
-      <button class="ctrl-btn" id="btnOverview">◈</button>
-    </div>
-  </div>
+<div class="sidebar">
+<div class="sidebar-head">
+<div class="kicker">历史长廊</div>
+<h2 id="personName"></h2>
+<div class="info" id="personBio"></div>
+</div>
+<div class="timeline" id="timeline"></div>
+</div>
+<div class="map-area">
+<div id="map"></div>
+<div class="map-top">
+<div class="layer-ctrl" id="layerCtrl"></div>
+</div>
+<button class="btn-back" onclick="history.back()">← 返回</button>
+<div class="toast" id="mapToast"></div>
+<div class="map-overlay">
+<button class="map-ctrl" id="btnPrev">⏮</button>
+<button class="map-ctrl" id="btnPlay">▶</button>
+<button class="map-ctrl" id="btnNext">⏭</button>
+<button class="map-ctrl" id="btnOverview">🗺️</button>
+<span class="map-info" id="playInfo">0/0</span>
+<span class="map-info" id="mapInfo">◉ 全景 · 点击播放</span>
+</div>
+</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var tileProviders=[
-  {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
   {name:"卫星",icon:"🛰️",src:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",attr:"Esri"},
-  {name:"地形",icon:"🏔️",src:"https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",attr:"OpenTopoMap"},
+  {name:"暗色",icon:"🌙",src:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",attr:"CARTO"},
+  {name:"地形",icon:"🗺️",src:"https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",attr:"OpenTopoMap"},
   {name:"水彩",icon:"🎨",src:"https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png",attr:"Stamen"},
   {name:"极简",icon:"⬜",src:"https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}{r}.png",attr:"Stamen"},
-  {name:"街道",icon:"🗺️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
+  {name:"街道",icon:"🏙️",src:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",attr:"OSM"}
 ];
 var people=[
   {id:"confucius",name:"孔子",emoji:"🌐",color:"#dc9a5c",bio:"公元前551—前479 · 周游列国十四载",events:[
-    {date:"前551",title:"生于鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"“吾少也贱，故多能鄙事。”"},
+    {date:"前551",title:"生于鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"\"吾少也贱，故多能鄙事。\""},
     {date:"前517",title:"适齐",location:"临淄",lat:36.82,lng:118.32,desc:"闻《韶》三月不知肉味。"},
     {date:"前501",title:"中都宰",location:"曲阜",lat:35.60,lng:116.99,desc:"治理中都，路不拾遗。"},
     {date:"前497",title:"去鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"辞官而去，周游之始。",icon:"✈"},
-    {date:"前497",title:"适卫",location:"澮阳",lat:35.70,lng:115.03,desc:"卫灵公待之，然不能用。"},
-    {date:"前493",title:"过宋",location:"商丘",lat:34.44,lng:115.65,desc:"宋司马桓雋欲杀之。",icon:"⚠"},
+    {date:"前497",title:"适卫",location:"濮阳",lat:35.70,lng:115.03,desc:"卫灵公待之，然不能用。"},
+    {date:"前493",title:"过宋",location:"商丘",lat:34.44,lng:115.65,desc:"宋司马桓魋欲杀之。",icon:"⚠"},
     {date:"前492",title:"至陈",location:"淮阳",lat:33.73,lng:114.89,desc:"居陈三载，绝粮之际弦歌不辍。",icon:"🎵"},
     {date:"前489",title:"蔡地",location:"上蔡",lat:33.25,lng:114.26,desc:"楚昭王欲封以书社。"},
     {date:"前484",title:"归鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"十四年归，删述六经。",icon:"📚"},
-    {date:"前479",title:"薙",location:"曲阜",lat:35.60,lng:116.99,desc:"“泰山其颓乎！梁木其坏乎！哲人其萎乎！”"}
+    {date:"前479",title:"卒",location:"曲阜",lat:35.60,lng:116.99,desc:"\"泰山其颓乎！梁木其坏乎！哲人其萎乎！\""}
   ]},
   {id:"napoleon",name:"拿破仑",emoji:"👑",color:"#c86060",bio:"1769—1821 · 法兰西第一帝国皇帝",events:[
     {date:"1769",title:"生于科西嘉",location:"阿雅克肖",lat:41.92,lng:8.74,desc:"十岁入军校，擅数学。"},
@@ -156,159 +158,41 @@ var people=[
     {date:"1271",title:"启程东行",location:"威尼斯",lat:45.44,lng:12.32,desc:"十七岁随父叔出发。",icon:"⛵"},
     {date:"1275",title:"上都觐见",location:"正蓝旗",lat:42.24,lng:115.99,desc:"忽必烈甚喜，命仕元朝。",icon:"👑"},
     {date:"1275",title:"大都",location:"北京",lat:39.90,lng:116.40,desc:"学蒙语，受重用。"},
-    {date:"1292",title:"护送归途",location:"泉州",lat:24.87,lng:118.68,desc:"护送阔阔真公主出嫁波斯。",icon:"⛵"},
-    {date:"1295",title:"归抵威尼斯",location:"威尼斯",lat:45.44,lng:12.32,desc:"离家二十四载，富甲一方。"},
-    {date:"1298",title:"狱中书",location:"热那亚",lat:44.40,lng:8.94,desc:"俘于热那亚——狱中口述东方见闻。",icon:"📚"},
-    {date:"1324",title:"终老",location:"威尼斯",lat:45.44,lng:12.32,desc:"临终：「我讲述的还不及其所见的一半」"}
+    {date:"1292",title:"护送公主",location:"泉州",lat:24.91,lng:118.59,desc:"护送阔阔真公主远嫁伊尔汗国。",icon:"🚢"},
+    {date:"1295",title:"归乡",location:"威尼斯",lat:45.44,lng:12.32,desc:"口述《马可·波罗游记》。"},
+    {date:"1324",title:"临终",location:"威尼斯",lat:45.44,lng:12.32,desc:"\"我还没讲完一半。\"",icon:"🕯️"}
   ]}
 ];
-var cur,step=-1,playing=false,timer,animId,markers=[],lines=[],traveler=null,currentLayer=0,tileLayer=null;
-var map=L.map("map",{center:[25,40],zoom:2,minZoom:2,zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:0,wheelPxPerZoomLevel:120,worldCopyJump:true});
+var cur,step=-1,playing=false,timer=null,currentLayer=0,tileLayer=null;
+var markers=[],lines=[],traveler=null,animId=null;
+var map=L.map("map",{center:[33,112],zoom:4,minZoom:2,zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:0,wheelPxPerZoomLevel:120,worldCopyJump:true});
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
-function setTile(index){
-  currentLayer=index;
-  if(tileLayer)map.removeLayer(tileLayer);
-  var p=tileProviders[index];
-  tileLayer=L.tileLayer(p.src,{maxZoom:19,attribution:p.attr}).addTo(map);
-  document.querySelectorAll(".layer-btn").forEach(function(b,i){b.classList.toggle("active",i===index)});
-}
+function setTile(index){currentLayer=index;if(tileLayer)map.removeLayer(tileLayer);var p=tileProviders[index];tileLayer=L.tileLayer(p.src,{maxZoom:19,attribution:p.attr}).addTo(map);document.querySelectorAll(".layer-btn").forEach(function(b,i){b.classList.toggle("active",i===index)});}
 var lc=document.getElementById("layerCtrl");
-tileProviders.forEach(function(p,i){
-  var b=document.createElement("button");
-  b.className="layer-btn"+(i===1?" active":"");
-  b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;
-  b.onclick=function(){setTile(i)};
-  lc.appendChild(b);
-});
-setTile(1);
-function makeIcon(e,i,col,isA){
-  var r=isA?34:26,em="📍",c=isA?"#f0c040":col;
-  return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+';box-shadow:0 0 10px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35)">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});
-}
-function mkTraveler(){return L.marker([0,0],{icon:L.divIcon({html:'<div class="traveler"></div>',className:"",iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:9999})}
-function bezierPath(p1,p2,s){s=s||50;var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2,off=Math.min(4,.8/Math.abs(p2[0]-p1[0]||1)),ctrl=[mlat+off,mlng+(Math.random()-.5)*3],pts=[];for(var i=0;i<=s;i++){var t=i/s;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}return pts}
-function select(id){
-  if(cur&&cur.id===id)return;
-  stop();cur=people.find(function(p){return p.id===id});step=-1;
-  if(traveler)map.removeLayer(traveler);traveler=null;
-  document.querySelectorAll(".chip").forEach(function(c){c.classList.remove("active")});
-  document.getElementById("chip-"+id).classList.add("active");
-  document.getElementById("figureName").textContent=cur.emoji+" "+cur.name;
-  document.getElementById("figureBio").textContent=cur.bio;
-  document.getElementById("btnPlay").textContent="►";
-  document.getElementById("btnPlay").classList.remove("playing");
-  renderTL();renderMap();fitBounds();updateInfo();
-  document.getElementById("mapInfo").textContent="◈ "+cur.events.length+" 步 · 点击播放";
-  setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
-}
-function renderTL(){
-  var el=document.getElementById("timeline");el.innerHTML="";
-  if(!cur)return;
-  cur.events.forEach(function(e,i){
-    var d=document.createElement("div");d.className="tl-item";d.id="tl-"+i;
-    d.innerHTML='<span class="tl-step">'+(i+1)+'</span><div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';
-    d.onclick=function(){goto(i)};el.appendChild(d);
-  });
-}
-function renderMap(){
-  markers.forEach(function(m){map.removeLayer(m)});
-  lines.forEach(function(l){map.removeLayer(l)});
-  if(traveler)map.removeLayer(traveler);traveler=null;
-  markers=[];lines=[];
-  if(!cur)return;
-  var coords=cur.events.map(function(e){return[e.lat,e.lng]});
-  for(var i=0;i<coords.length-1;i++){(function(p1,p2){
-    var pts=bezierPath(p1,p2);
-    lines.push(L.polyline(pts,{color:cur.color,weight:1.5,opacity:.22,className:"journey-line",interactive:false}).addTo(map));
-  })(coords[i],coords[i+1])}
-  cur.events.forEach(function(e,i){
-    var a=i===step;
-    var m=L.marker([e.lat,e.lng],{icon:makeIcon(e,i,cur.color,a)}).addTo(map);
-    m.bindPopup('<div class="popup-inner"><div class="popup-title">'+(e.icon||"")+" "+e.title+'</div><div class="popup-meta">'+e.location+" · "+e.date+'</div>'+(e.desc?'<div class="popup-desc">'+e.desc+'</div>':"")+'</div>',{maxWidth:280,closeButton:true,className:"custom-popup"});
-    markers.push(m);
-  });
-}
-function goto(i){
-  if(!cur||i<0||i>=cur.events.length)return;
-  var prev=step;step=i;var e=cur.events[i];
-  document.querySelectorAll(".tl-item").forEach(function(el,j){
-    el.classList.remove("active","done");
-    if(j<i)el.classList.add("done");
-    if(j===i)el.classList.add("active");
-  });
-  var tli=document.getElementById("tl-"+i);
-  if(tli)tli.scrollIntoView({behavior:"smooth",block:"center"});
-  markers.forEach(function(m,j){
-    var isA=j===i;
-    m.setIcon(makeIcon(cur.events[j],j,cur.color,isA));
-    if(isA)m.bringToFront();
-  });
-  if(!traveler){traveler=mkTraveler();traveler.addTo(map)}
-  if(prev>=0&&prev!==i){
-    var from=cur.events[prev];
-    var path=bezierPath([from.lat,from.lng],[e.lat,e.lng],80);
-    var f=0;cancelAnimationFrame(animId);
-    var af=function(){
-      if(f>=path.length){traveler.setLatLng([e.lat,e.lng]);return}
-      traveler.setLatLng(path[f]);f+=2;animId=requestAnimationFrame(af);
-    };
-    af();
-  }else{traveler.setLatLng([e.lat,e.lng])}
-  var toast=document.getElementById("mapToast");
-  toast.textContent=(e.icon||"")+" "+e.title+" · "+e.date;
-  toast.classList.add("show");clearTimeout(toast._t);
-  toast._t=setTimeout(function(){toast.classList.remove("show")},3500);
-  updateInfo();
-}
-function updateInfo(){
-  if(!cur){document.getElementById("playInfo").textContent="0/0";return}
-  document.getElementById("playInfo").textContent=(step+1)+"/"+cur.events.length;
-  if(step>=0)document.getElementById("mapInfo").textContent=cur.events[step].location+" · "+cur.events[step].date;
-}
-function start(){
-  if(!cur)return;
-  if(step>=cur.events.length-1)step=-1;
-  playing=true;document.getElementById("btnPlay").textContent="⏸";
-  document.getElementById("btnPlay").classList.add("playing");advance();
-}
-function stop(){
-  playing=false;if(timer)clearTimeout(timer);timer=null;
-  document.getElementById("btnPlay").textContent="►";
-  document.getElementById("btnPlay").classList.remove("playing");
-}
-function advance(){
-  if(!playing)return;
-  var n=step+1;
-  if(n>=cur.events.length){stop();return}
-  goto(n);timer=setTimeout(advance,3500);
-}
-function fitBounds(){
-  if(!cur)return;
-  var coords=cur.events.map(function(e){return[e.lat,e.lng]});
-  map.flyToBounds(L.latLngBounds(coords).pad(.25),{duration:1.2,maxZoom:6});
-  markers.forEach(function(m,j){m.setIcon(makeIcon(cur.events[j],j,cur.color,false))});
-  document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active","done")});
-  step=-1;updateInfo();
-  document.getElementById("mapInfo").textContent="◈ 全景 · 点击播放";
-}
+tileProviders.forEach(function(p,i){var b=document.createElement("button");b.className="layer-btn"+(i===0?" active":"");b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;b.onclick=function(){setTile(i)};lc.appendChild(b)});
+setTile(0);
+function mkTraveler(){return L.marker([0,0],{icon:L.divIcon({className:"traveler-marker",html:'<div class="traveler-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:1000})}
+function makeIcon(e,i,c,isA){var r=isA?34:26,em="📍";return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+';box-shadow:0 0 10px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35)">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});}
+function bezierPath(p1,p2,ptsCount){ptsCount=ptsCount||40;var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;var ctrlLat=mlat+Math.min(3,.5/Math.abs(p2[0]-p1[0]||.01)),ctrlLng=mlng+(Math.random()-.5)*2;var pts=[];for(var j=0;j<=ptsCount;j++){var t=j/ptsCount;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrlLat+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrlLng+t*t*p2[1]])}return pts}
+function select(id){stop();cur=people.find(function(p){return p.id===id});step=-1;document.getElementById("personName").textContent=cur.name;document.getElementById("personBio").textContent=cur.bio;document.querySelectorAll(".chip").forEach(function(c){c.classList.toggle("active",c.id==="chip-"+id)});renderTimeline();renderMap();fitBounds();}
+function renderTimeline(){var el=document.getElementById("timeline");el.innerHTML="";if(!cur)return;cur.events.forEach(function(e,i){var d=document.createElement("div");d.className="tl-item";d.id="tl-"+i;d.innerHTML='<span class="tl-step">'+(i+1)+'</span><div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';d.onclick=function(){goto(i)};el.appendChild(d)});}
+function renderMap(){markers.forEach(function(m){map.removeLayer(m)});lines.forEach(function(l){map.removeLayer(l)});if(traveler)map.removeLayer(traveler);traveler=null;markers=[];lines=[];if(!cur)return;var coords=cur.events.map(function(e){return[e.lat,e.lng]});for(var i=0;i<coords.length-1;i++){(function(p1,p2){var pts=bezierPath(p1,p2);lines.push(L.polyline(pts,{color:cur.color,weight:1.5,opacity:.22,className:"journey-line",interactive:false}).addTo(map));})(coords[i],coords[i+1])}cur.events.forEach(function(e,i){var a=i===step;var m=L.marker([e.lat,e.lng],{icon:makeIcon(e,i,cur.color,a)}).addTo(map);m.bindPopup('<div class="popup-inner"><div class="popup-title">'+(e.icon||"")+" "+e.title+'</div><div class="popup-meta">'+e.location+" · "+e.date+'</div>'+(e.desc?'<div class="popup-desc">'+e.desc+'</div>':"")+'</div>',{maxWidth:280,closeButton:true,className:"custom-popup"});markers.push(m);});}
+function goto(i){if(!cur||i<0||i>=cur.events.length)return;var prev=step;step=i;var e=cur.events[i];document.querySelectorAll(".tl-item").forEach(function(el,j){el.classList.remove("active","done");if(j<i)el.classList.add("done");if(j===i)el.classList.add("active");});var tli=document.getElementById("tl-"+i);if(tli)tli.scrollIntoView({behavior:"smooth",block:"center"});markers.forEach(function(m,j){var isA=j===i;m.setIcon(makeIcon(cur.events[j],j,cur.color,isA));if(isA)m.bringToFront();});if(!traveler){traveler=mkTraveler();traveler.addTo(map)}if(prev>=0&&prev!==i){var from=cur.events[prev];var path=bezierPath([from.lat,from.lng],[e.lat,e.lng],80);var f=0;cancelAnimationFrame(animId);var af=function(){if(f>=path.length){traveler.setLatLng([e.lat,e.lng]);return}traveler.setLatLng(path[f]);f+=2;animId=requestAnimationFrame(af);};af();}else{traveler.setLatLng([e.lat,e.lng])}var toast=document.getElementById("mapToast");toast.textContent=(e.icon||"")+" "+e.title+" · "+e.date;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},3500);updateInfo();}
+function updateInfo(){if(!cur){document.getElementById("playInfo").textContent="0/0";return}document.getElementById("playInfo").textContent=(step+1)+"/"+cur.events.length;if(step>=0)document.getElementById("mapInfo").textContent=cur.events[step].location+" · "+cur.events[step].date;}
+function start(){if(!cur)return;if(step>=cur.events.length-1)step=-1;playing=true;document.getElementById("btnPlay").textContent="⏸";document.getElementById("btnPlay").classList.add("playing");advance();}
+function stop(){playing=false;if(timer)clearTimeout(timer);timer=null;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing");}
+function advance(){if(!playing)return;var n=step+1;if(n>=cur.events.length){stop();return}goto(n);timer=setTimeout(advance,3500);}
+function fitBounds(){if(!cur)return;var coords=cur.events.map(function(e){return[e.lat,e.lng]});map.flyToBounds(L.latLngBounds(coords).pad(.25),{duration:1.2,maxZoom:6});markers.forEach(function(m,j){m.setIcon(makeIcon(cur.events[j],j,cur.color,false))});document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active","done")});step=-1;updateInfo();document.getElementById("mapInfo").textContent="◉ 全景 · 点击播放";}
 document.getElementById("btnPrev").onclick=function(){stop();if(cur&&step>0)goto(step-1)};
 document.getElementById("btnNext").onclick=function(){stop();if(cur&&step<cur.events.length-1)goto(step+1)};
 document.getElementById("btnPlay").onclick=function(){playing?stop():start()};
 document.getElementById("btnOverview").onclick=function(){stop();if(cur)fitBounds()};
-document.addEventListener("keydown",function(ev){
-  if(!cur)return;
-  if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.events.length-1)goto(step+1)}
-  if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)goto(step-1)}
-  if(ev.key===" "){ev.preventDefault();playing?stop():start()}
-});
+document.addEventListener("keydown",function(ev){if(!cur)return;if(ev.key==="ArrowRight"||ev.key==="d"){stop();if(step<cur.events.length-1)goto(step+1)}if(ev.key==="ArrowLeft"||ev.key==="a"){stop();if(step>0)goto(step-1)}if(ev.key===" "){ev.preventDefault();playing?stop():start()}});
 var fb=document.getElementById("figureBar");
-people.forEach(function(p){
-  var c=document.createElement("div");c.className="chip";c.id="chip-"+p.id;
-  c.innerHTML='<div class="dot" style="background:'+p.color+'">'+p.emoji+'</div>'+p.name;
-  c.onclick=function(){select(p.id)};fb.appendChild(c);
-});
+people.forEach(function(p){var c=document.createElement("div");c.className="chip";c.id="chip-"+p.id;c.innerHTML='<div class="dot" style="background:'+p.color+'">'+p.emoji+'</div>'+p.name;c.onclick=function(){select(p.id)};fb.appendChild(c);});
 select("confucius");
+setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
 </body>
 </html>
