@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>旅程地图 · Pivi 风格</title>
+  <meta name="theme-color" content="#05060d" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:"Urbanist","Noto Sans SC","PingFang SC",sans-serif;background:#05060d;color:#eef2ff}
+    body{display:flex;min-height:100vh;overflow:hidden}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+
+    .app-loading{position:fixed;inset:0;background:#05060d;display:flex;align-items:center;justify-content:center;z-index:999;transition:opacity .3s ease}
+    .app-loading.hide{opacity:0;pointer-events:none}
+    .loader{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.12);border-top-color:#86c1ff;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .layout{display:grid;grid-template-columns:360px minmax(0,1fr);width:100%;}
+    .sidebar{background:#090b14;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;position:relative;z-index:3}
+    .sidebar-head{padding:24px 24px 18px}
+    .sidebar-head .kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;color:#7ea4ff;text-transform:uppercase;margin-bottom:10px}
+    .sidebar-head h1{font-size:24px;line-height:1.15;font-weight:900;color:#f4f7ff;max-width:260px}
+    .sidebar-head p{margin-top:10px;font-size:13px;line-height:1.75;color:#b7c2da;max-width:280px}
+    .sidebar-head .btn-edit{margin-top:20px;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#dce7ff;cursor:pointer;transition:background .25s,border-color .25s}
+    .sidebar-head .btn-edit:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.24)}
+
+    .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 24px 18px}
+    .summary-card{background:rgba(14,17,32,.95);border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px}
+    .summary-card .num{font-size:26px;font-weight:800;color:#86c1ff}
+    .summary-card .label{font-size:11px;color:#8fa2d8;letter-spacing:.12em;text-transform:uppercase}
+
+    .timeline{overflow-y:auto;flex:1;padding:0 0 22px 0}
+    .tl-item{position:relative;padding:18px 20px 18px 22px;margin:0 22px 12px 22px;border-radius:18px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:transform .2s,background .2s,border-color .2s}
+    .tl-item:hover{transform:translateY(-1px);background:rgba(255,255,255,.05)}
+    .tl-item.active{background:linear-gradient(135deg,rgba(134,193,255,.14),rgba(42,123,255,.08));border-color:rgba(134,193,255,.4)}
+    .tl-item::before{content:'';position:absolute;left:12px;top:24px;width:8px;height:8px;border-radius:50%;background:#86c1ff;box-shadow:0 0 0 6px rgba(134,193,255,.12)}
+    .tl-date{font-size:11px;color:#8fa2d8;margin-bottom:6px;letter-spacing:.08em}
+    .tl-title{font-size:15px;font-weight:700;line-height:1.4;color:#eef2ff}
+    .tl-location{font-size:12px;color:#b7c2da;margin-top:8px}
+    .tl-desc{margin-top:10px;font-size:12px;line-height:1.66;color:#a0aad0}
+
+    .editor{display:none;flex:1;flex-direction:column;padding:18px 20px 20px;gap:12px;overflow-y:auto}
+    .sidebar.editing .timeline{display:none}
+    .sidebar.editing .editor{display:flex}
+    .editor textarea{flex:1;min-height:260px;background:#070913;border:1px solid rgba(255,255,255,.08);border-radius:16px;color:#eef2ff;padding:18px;font-family:SFMono-Regular,Consolas,Monaco,monospace;font-size:13px;line-height:1.6;resize:none}
+    .editor .hint{font-size:11px;color:#7a8abf}
+    .editor-actions{display:flex;flex-wrap:wrap;gap:10px}
+    .editor-actions button{padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#eef2ff;cursor:pointer;transition:background .25s,border-color .25s}
+    .editor-actions button:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
+    .btn-apply{background:#86c1ff;color:#05060d;border-color:transparent}
+
+    .map-area{position:relative;display:flex;flex-direction:column;background:#02030a}
+    #map{width:100%;height:100%}
+    .map-controls{position:absolute;top:22px;left:22px;display:flex;gap:10px;z-index:1000}
+    .btn-ctrl{padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(1,7,19,.85);color:#d8e3ff;font-size:13px;cursor:pointer;transition:background .25s,border-color .25s}
+    .btn-ctrl:hover{background:rgba(255,255,255,.08);border-color:rgba(134,193,255,.4)}
+
+    .map-stats{position:absolute;top:22px;right:22px;z-index:1000;background:rgba(3,11,25,.92);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.06);border-radius:20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px;min-width:320px}
+    .map-stat{display:flex;flex-direction:column;gap:6px}
+    .map-stat .stat-num{font-size:20px;font-weight:800;color:#86c1ff}
+    .map-stat .stat-label{font-size:11px;color:#9cb0d6;text-transform:uppercase;letter-spacing:.12em}
+
+    .map-toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:1000;padding:14px 18px;border-radius:999px;background:rgba(2,6,17,.88);border:1px solid rgba(134,193,255,.14);color:#eef2ff;font-size:12px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+    .map-toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+    .leaflet-popup-content-wrapper{background:rgba(5,9,18,.95);border:1px solid rgba(134,193,255,.16);box-shadow:0 18px 52px rgba(0,0,0,.45)}
+    .leaflet-popup-tip{background:rgba(5,9,18,.95)}
+
+    .marker-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#86c1ff,#4075ff);color:#fff;font-size:14px;font-weight:700;box-shadow:0 0 0 3px rgba(134,193,255,.18);border:2px solid rgba(255,255,255,.15);}
+    .marker-badge.active{transform:scale(1.12);box-shadow:0 0 0 10px rgba(134,193,255,.16)}
+
+    @media(max-width:980px){.layout{grid-template-columns:1fr};.sidebar{width:100%;min-height:44vh;max-height:44vh;overflow:hidden}.sidebar.editing{max-height:64vh}.map-stats{min-width:unset;width:calc(100% - 44px);left:22px;right:22px;top:auto;bottom:22px;grid-template-columns:repeat(2,minmax(0,1fr));}.map-controls{top:auto;bottom:102px;left:22px}.timeline{padding-bottom:14px}}
+    @media(max-width:700px){.sidebar-head h1{font-size:20px}.summary-grid{grid-template-columns:1fr}.map-stats{grid-template-columns:1fr}.map-controls{flex-wrap:wrap}.btn-ctrl{flex:1}}
+  </style>
+</head>
+<body>
+  <div class="app-loading" id="loading"><div class="loader"></div></div>
+  <div class="layout">
+    <section class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="kicker">My Journey</div>
+        <h1>旅程地图</h1>
+        <p>参考 Making History Sandbox 与 Pivi's travels，将地图样式、地点 Marker、时间轴与统计融为一体。</p>
+        <button class="btn-edit" id="btnEdit">编辑数据</button>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card"><div class="num" id="statCount">0</div><div class="label">足迹数量</div></div>
+        <div class="summary-card"><div class="num" id="statCities">0</div><div class="label">地点数量</div></div>
+        <div class="summary-card"><div class="num" id="statDistance">0 km</div><div class="label">总里程</div></div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="editor" id="editorPanel">
+        <textarea id="editor" placeholder="在此粘贴 JSON..."></textarea>
+        <div class="hint">每项含 <code>date</code> <code>title</code> <code>location</code> <code>lat</code> <code>lng</code> <code>desc</code>。可选 <code>icon</code>。</div>
+        <div class="editor-actions">
+          <button class="btn-apply" id="btnApply">应用</button>
+          <button id="btnCancel">取消</button>
+          <button id="btnSample">示例</button>
+          <button id="btnDownload">导出 JSON</button>
+          <button onclick="document.getElementById('fileInput').click()">上传 JSON<input type="file" id="fileInput" accept=".json" style="display:none"></button>
+        </div>
+      </div>
+    </section>
+    <section class="map-area">
+      <div id="map"></div>
+      <div class="map-controls">
+        <a href="index.html" class="btn-ctrl">← 首页</a>
+        <button class="btn-ctrl" id="btnOverview">全景</button>
+      </div>
+      <div class="map-stats">
+        <div class="map-stat"><div class="stat-num" id="statBlockCount">0</div><div class="stat-label">已加载节点</div></div>
+        <div class="map-stat"><div class="stat-num" id="statBlockCity">0</div><div class="stat-label">独立城市</div></div>
+        <div class="map-stat"><div class="stat-num" id="statBlockRange">—</div><div class="stat-label">时间范围</div></div>
+      </div>
+      <div class="map-toast" id="mapToast"></div>
+    </section>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    var sample=[{date:"2020 春",title:"起点",location:"北京",lat:39.90,lng:116.40,desc:"一切从这里开始。",icon:"🚀"},{date:"2020 夏",title:"成都",location:"成都",lat:30.57,lng:104.07,desc:"天府之国。",icon:"🌶️"},{date:"2021 春",title:"三亚",location:"三亚",lat:18.25,lng:109.50,desc:"碧海蓝天。"},{date:"2021 秋",title:"拉萨",location:"拉萨",lat:29.65,lng:91.10,desc:"日光洒肩。",icon:"🏔️"},{date:"2022",title:"上海",location:"上海",lat:31.23,lng:121.47,desc:"在路上。",icon:"🌟"}];
+    var data=JSON.parse(JSON.stringify(sample)),active=-1,markers=[],polyline;
+    var map=L.map("map",{center:[33,112],zoom:4,minZoom:2,zoomControl:false,attributionControl:false});
+    L.control.zoom({position:"bottomright"}).addTo(map);
+    L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:"CARTO · OSM"}).addTo(map);
+
+    function formatDistance(m){return m<1000?m.toFixed(0)+" m":(m/1000).toFixed(1)+" km"}
+    function haversine(lat1,lng1,lat2,lng2){var d2r=Math.PI/180;var dlat=(lat2-lat1)*d2r;var dlng=(lng2-lng1)*d2r;var a=Math.sin(dlat/2)**2+Math.cos(lat1*d2r)*Math.cos(lat2*d2r)*Math.sin(dlng/2)**2;return 6371e3*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+    function summary(){var count=data.length;var cities=new Set(data.map(function(e){return e.location})).size;var dist=0;for(var i=0;i<count-1;i++){dist+=haversine(data[i].lat,data[i].lng,data[i+1].lat,data[i+1].lng)}var range= count? data[0].date + " – " + data[count-1].date : "—";document.getElementById("statCount").textContent=count;document.getElementById("statCities").textContent=cities;document.getElementById("statDistance").textContent=formatDistance(dist);document.getElementById("statBlockCount").textContent=count;document.getElementById("statBlockCity").textContent=cities;document.getElementById("statBlockRange").textContent=range;}
+
+    function buildMarkerIcon(item,index,isActive){var label=item.icon||String(index+1);var size=isActive?40:34;return L.divIcon({html:'<div class="marker-badge'+(isActive?" active":"")+'" style="width:'+size+'px;height:'+size+'px;font-size:'+(isActive?"16px":"14px")+';">'+label+'</div>',className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]});}
+
+    function renderMap(){markers.forEach(function(m){map.removeLayer(m.marker)});markers=[];if(polyline)map.removeLayer(polyline);polyline=null;var coords=data.map(function(e){return[e.lat,e.lng]});if(coords.length>1){polyline=L.polyline(coords,{color:"#86c1ff",weight:2.5,opacity:.7,dashArray:"10 7"}).addTo(map);for(var i=0;i<coords.length-1;i++){(function(p1,p2){var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2,ctrl=[mlat+Math.min(2,.28/Math.abs(p2[0]-p1[0]||1)),mlng+(Math.random()-.5)*1.2],pts=[];for(var j=0;j<=30;j++){var t=j/30;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}L.polyline(pts,{color:"rgba(134,193,255,.22)",weight:1.2,opacity:.45,dashArray:"6 8",interactive:false}).addTo(map)})(coords[i],coords[i+1])}}data.forEach(function(e,i){var marker=L.marker([e.lat,e.lng],{icon:buildMarkerIcon(e,i,i===active)}).addTo(map);marker.bindPopup('<div style="font-family:Urbanist,\u0022Noto Sans SC\u0022,sans-serif;min-width:200px"><div style="font-size:15px;font-weight:700;color:#eef2ff">'+(e.icon||"")+' '+e.title+'</div><div style="font-size:11px;color:#9cb0d6;margin:6px 0">'+e.location+' · '+e.date+'</div><div style="font-size:12px;line-height:1.6;color:#b0bce3">'+(e.desc||"")+'</div></div>',{maxWidth:290,className:"custom-popup"});marker.on("click",function(){focus(i)});markers.push({marker:marker,index:i})})}
+
+    function renderTimeline(){var el=document.getElementById("timeline");el.innerHTML="";data.forEach(function(e,i){var div=document.createElement("div");div.className="tl-item";div.innerHTML='<div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+' '+e.title+'</div><div class="tl-location">'+e.location+'</div><div class="tl-desc">'+e.desc+'</div>';div.onclick=function(){focus(i)};el.appendChild(div)})}
+
+    function focus(i){active=i;document.querySelectorAll(".tl-item").forEach(function(el,j){el.classList.toggle("active",j===i)});markers.forEach(function(m){m.marker.setIcon(buildMarkerIcon(data[m.index],m.index,m.index===i)); if(m.index===i)m.marker.openPopup()});var target=[data[i].lat,data[i].lng];map.flyTo(target,8,{duration:1.1});showToast((data[i].icon||"")+" "+data[i].title+" · "+data[i].location);} 
+
+    function showToast(text){var toast=document.getElementById("mapToast");toast.textContent=text;toast.classList.add("show");clearTimeout(toast._timer);toast._timer=setTimeout(function(){toast.classList.remove("show")},3400)}
+
+    function fit(){if(!data.length)return;var coords=data.map(function(e){return[e.lat,e.lng]});map.flyToBounds(L.latLngBounds(coords).pad(.2),{duration:1.2,maxZoom:6})}
+
+    var sidebar=document.getElementById("sidebar"),editor=document.getElementById("editor"),editing=false;
+    document.getElementById("btnEdit").onclick=function(){editing=!editing;sidebar.classList.toggle("editing",editing);this.textContent=editing?"返回视图":"编辑数据";if(editing)editor.value=JSON.stringify(data,null,2)};
+    document.getElementById("btnCancel").onclick=function(){editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"};
+    document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTimeline();fit();summary();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
+    document.getElementById("btnSample").onclick=function(){editor.value=JSON.stringify(sample,null,2)};
+    document.getElementById("fileInput").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){editor.value=ev.target.result};r.readAsText(f)};
+    document.getElementById("btnDownload").onclick=function(){var b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download="journey.json";a.click();URL.revokeObjectURL(u)};
+    document.getElementById("btnOverview").onclick=function(){active=-1;document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active")});renderMap();fit();};
+    renderMap();renderTimeline();summary();fit();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
+  </script>
+</body>
+</html>

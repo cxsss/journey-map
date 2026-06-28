@@ -8,7 +8,8 @@
 journey-site/
 ├── index.html              # 首页入口
 ├── life-journey-map.html   # 单人历程模式
-└── encounter-map.html      # 多人相遇交汇模式
+├── encounter-map.html      # 多人相遇交汇模式
+├── pivi-journey.html       # Pivi 风格旅程地图（地图样式+时间轴+统计）
 ```
 
 ## 🚀 快速上线
