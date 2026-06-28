@@ -4,81 +4,82 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>历史长廊 · 轨迹地图</title>
+<meta name="theme-color" content="#0a0a12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#faf9f6;--surface:#fff;
-  --border:#e8e2d8;--border-strong:#d8d0c0;
-  --text:#1a1a2e;--text-2:#6b6050;--text-3:#b0a898;
-  --gold:#c89050;--rose:#c06060;
-}
-body{
-  font-family:"Inter","PingFang SC","Microsoft YaHei",-apple-system,sans-serif;
-  background:var(--bg);color:var(--text);
-  display:flex;flex-direction:column;height:100vh;overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+:root{--bg:#0a0a12;--surface:#16161e;--surface-2:#1e1e2a;--border:rgba(255,255,255,0.06);--border-strong:rgba(255,255,255,0.1);--text:#fff;--text-2:#9ca3af;--text-3:#6b7280;--gold:#dc9a5c;--rose:#c86060;--amber:#f0c040}
+body{font-family:"Urbanist","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;transition:all .4s cubic-bezier(.4,0,.2,1)}
+body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3);min-width:40px;min-height:40px}
 
-.topbar{display:flex;align-items:center;padding:10px 22px;gap:4px;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative}
+/* Loading */
+.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+.app-loading.hide{opacity:0;pointer-events:none}
+.loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;padding:12px 24px;gap:6px;background:rgba(10,10,18,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative;transition:all .4s cubic-bezier(.4,0,.2,1)}
 .topbar::-webkit-scrollbar{height:0}
-.chip{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:18px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all 0.3s;font-size:13px;color:var(--text-2);flex-shrink:0}
+.chip{display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:24px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all .4s cubic-bezier(.4,0,.2,1);font-size:14px;font-weight:400;color:var(--text-2);flex-shrink:0}
 .chip:hover{border-color:var(--border-strong);color:var(--text)}
-.chip.active{border-color:rgba(200,144,80,0.3);background:rgba(200,144,80,0.04);color:var(--gold);font-weight:500}
-.chip .dot{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.chip.active{border-color:rgba(220,154,92,0.25);background:rgba(220,154,92,0.06);color:var(--gold);font-weight:500}
+.chip .dot{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px}
 
 .main{display:flex;flex:1;overflow:hidden;position:relative;z-index:1}
-.sidebar{width:300px;min-width:300px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
-.sidebar-head{padding:18px 20px 12px;border-bottom:1px solid var(--border)}
-.sidebar-head .kicker{font-size:9px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:4px}
-.sidebar-head .name{font-family:"Noto Serif SC","STSong",serif;font-size:21px;font-weight:700;letter-spacing:2px;color:#2c2416}
-.sidebar-head .bio{font-size:11px;color:var(--text-2);margin-top:4px;line-height:1.5}
+.sidebar{width:320px;min-width:320px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.sidebar-head{padding:20px 22px 16px;border-bottom:1px solid var(--border)}
+.sidebar-head .kicker{font-size:11px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:6px}
+.sidebar-head .name{font-family:"Noto Serif SC","STSong",serif;font-size:24px;font-weight:700;letter-spacing:3px;color:#e0d6c5}
+.sidebar-head .bio{font-size:12px;font-weight:400;color:var(--text-2);margin-top:6px;line-height:1.5}
 
-.timeline{flex:1;overflow-y:auto;padding:8px 14px 14px 20px;scroll-behavior:smooth}
-.timeline::-webkit-scrollbar{width:2px}
-.timeline::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
-
-.tl-item{position:relative;padding:11px 0 11px 22px;cursor:pointer;border-radius:6px;margin:1px 0;transition:background 0.2s}
-.tl-item:hover{background:rgba(200,144,80,0.03)}
-.tl-item.active{background:rgba(200,144,80,0.06)}
-.tl-item::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border)}
-.tl-item:first-child::before{top:16px}
-.tl-item:last-child::before{bottom:calc(100%-16px)}
-.tl-item::after{content:"";position:absolute;left:2.5px;top:17px;width:8px;height:8px;border-radius:50%;background:var(--surface);border:2px solid var(--border-strong);transition:all 0.3s;z-index:1}
-.tl-item.done::after{background:var(--gold);border-color:var(--gold);opacity:0.6}
-.tl-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px rgba(200,144,80,0.4);transform:scale(1.3)}
-.tl-step{display:inline-block;font-size:9px;font-weight:600;color:var(--text-3);width:16px;margin-right:4px}
+.timeline{flex:1;overflow-y:auto;padding:10px 16px 16px 22px;scroll-behavior:smooth}
+.tl-item{position:relative;padding:13px 0 13px 24px;cursor:pointer;border-radius:8px;margin:2px 0;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.tl-item:hover{background:rgba(255,255,255,0.02)}
+.tl-item.active{background:rgba(220,154,92,0.06)}
+.tl-item::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item:first-child::before{top:18px}
+.tl-item:last-child::before{bottom:calc(100%-18px)}
+.tl-item::after{content:"";position:absolute;left:3px;top:20px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--border-strong);transition:all .4s cubic-bezier(.4,0,.2,1);z-index:1}
+.tl-item.done::after{background:var(--gold);border-color:var(--gold);opacity:.5}
+.tl-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(220,154,92,.5);transform:scale(1.35)}
+.tl-step{font-size:9px;font-weight:600;color:var(--text-3);width:18px;display:inline-block;margin-right:6px}
 .tl-item.active .tl-step,.tl-item.done .tl-step{color:var(--gold)}
-.tl-date{font-size:9px;color:var(--text-3);margin-bottom:2px;font-family:"SF Mono","JetBrains Mono",monospace}
-.tl-title{font-size:12px;font-weight:500}
-.tl-loc{font-size:10px;color:var(--text-2);margin-top:2px}
+.tl-date{font-size:10px;font-weight:500;color:var(--text-3);margin-bottom:3px;letter-spacing:.5px}
+.tl-item.active .tl-date{color:rgba(220,154,92,.6)}
+.tl-title{font-size:13px;font-weight:500;line-height:1.4}
+.tl-loc{font-size:11px;font-weight:400;color:var(--text-2);margin-top:3px}
 
-.playbar{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
-.pbtn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-strong);background:#fff;cursor:pointer;font-size:11px;transition:all 0.25s;display:flex;align-items:center;justify-content:center;color:var(--text-2)}
-.pbtn:hover{border-color:var(--text-3);color:var(--text)}
-.pbtn.main{width:40px;height:40px;font-size:15px;border-color:rgba(200,144,80,0.3);color:var(--gold)}
-.pbtn.main:hover{background:rgba(200,144,80,0.06)}
-.pbtn.main.playing{background:var(--gold);color:#fff;border-color:var(--gold)}
-.pinfo{font-size:10px;font-weight:500;color:var(--text-3);font-family:"SF Mono","JetBrains Mono",monospace;min-width:44px;text-align:center}
+.playbar{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.pbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-strong);background:rgba(255,255,255,0.02);cursor:pointer;font-size:13px;transition:all .4s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;color:var(--text-2)}
+.pbtn:hover{border-color:#fff3;color:var(--text);background:rgba(255,255,255,0.04)}
+.pbtn.main{width:48px;height:48px;font-size:18px;border-color:rgba(220,154,92,.2);color:var(--gold)}
+.pbtn.main:hover{background:rgba(220,154,92,.08);border-color:rgba(220,154,92,.35)}
+.pbtn.main.playing{background:var(--gold);color:#0a0a0f;border-color:var(--gold)}
+.pinfo{font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.5px;min-width:48px;text-align:center}
 
-.map-wrap{flex:1;position:relative;background:#f0ece4}
+.map-wrap{flex:1;position:relative;background:#05050a}
 #map{width:100%;height:100%}
-.map-toast{position:absolute;bottom:5rem;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border:1px solid rgba(200,144,80,0.15);border-radius:18px;padding:6px 16px;font-size:12px;color:#2c2416;pointer-events:none;transition:all 0.5s;opacity:0;letter-spacing:1px}
+.map-toast{position:absolute;bottom:5rem;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(22,22,30,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(220,154,92,.12);border-radius:24px;padding:7px 20px;font-size:13px;font-weight:500;color:#e0d6c5;pointer-events:none;transition:opacity .5s ease,transform .5s ease;opacity:0;letter-spacing:1px;white-space:nowrap}
 .map-toast.show{opacity:1}
-.map-ctrl{position:absolute;top:12px;left:12px;z-index:1001;display:flex;gap:6px}
-.btn-ctrl{height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--border-strong);background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);color:var(--text-2);font-size:10px;cursor:pointer;transition:all 0.25s;font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:4px}
-.btn-ctrl:hover{border-color:var(--text-3);color:var(--text)}
-.map-info{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-3);pointer-events:none}
-.leaflet-popup{z-index:2000!important}
-.custom-popup .leaflet-popup-content-wrapper{background:#fff;color:var(--text);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.1);border:1px solid var(--border)}
-.custom-popup .leaflet-popup-tip{background:#fff}
-@media(max-width:768px){.main{flex-direction:column}.sidebar{width:100%;min-width:unset;max-height:34vh}.map-wrap{flex:1;min-height:66vh}.topbar{padding:8px 10px}.chip{padding:5px 10px;font-size:12px}}
+.map-ctrl{position:absolute;top:16px;left:16px;z-index:1001;display:flex;gap:8px}
+.btn-ctrl{height:32px;padding:0 14px;border-radius:16px;border:1px solid var(--border);background:rgba(10,10,18,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text-2);font-size:11px;cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:5px}
+.btn-ctrl:hover{border-color:var(--border-strong);color:var(--text);background:rgba(255,255,255,0.04)}
+.map-info{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:400;color:var(--text-3);pointer-events:none;letter-spacing:.5px}
+
+.custom-popup .leaflet-popup-content-wrapper{background:rgba(22,22,30,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);border:1px solid var(--border-strong);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.6);transition:all .4s cubic-bezier(.4,0,.2,1)}
+.custom-popup .leaflet-popup-tip{background:rgba(22,22,30,.96)}
+
+@media(max-width:768px){.main{flex-direction:column}.sidebar{width:100%;min-width:unset;max-height:36vh}.map-wrap{flex:1;min-height:64vh}.topbar{padding:10px 14px}.chip{padding:6px 12px;font-size:13px}}
 </style>
 </head>
 <body>
+<div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="topbar" id="figureBar"></div>
 <div class="main">
   <div class="sidebar">
@@ -89,15 +90,18 @@ body{
     </div>
     <div class="timeline" id="timeline"></div>
     <div class="playbar">
-      <button class="pbtn" id="btnPrev">◂</button>
-      <button class="pbtn main" id="btnPlay">▶</button>
-      <button class="pbtn" id="btnNext">▸</button>
+      <button class="pbtn" id="btnPrev" title="上一步">◂</button>
+      <button class="pbtn main" id="btnPlay" title="播放">▶</button>
+      <button class="pbtn" id="btnNext" title="下一步">▸</button>
       <span class="pinfo" id="playInfo">0/0</span>
     </div>
   </div>
   <div class="map-wrap">
     <div id="map"></div>
-    <div class="map-ctrl"><a href="index.html" class="btn-ctrl">← 返回</a><button class="btn-ctrl" id="btnOverview">全景</button></div>
+    <div class="map-ctrl">
+      <a href="index.html" class="btn-ctrl">← 返回首页</a>
+      <button class="btn-ctrl" id="btnOverview">全程</button>
+    </div>
     <div class="map-toast" id="mapToast"></div>
     <div class="map-info" id="mapInfo">选择人物后开始</div>
   </div>
@@ -105,146 +109,83 @@ body{
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var people=[
-{id:"confucius",name:"孔丘",emoji:"📖",color:"#c89050",bio:"前 551–479 · 儒家创始 · 周游列国十四载",events:[
-{date:"前 551",title:"生于鲁国陬邑",location:"曲阜",lat:35.60,lng:116.99,desc:"父叔梁纥，母颜徵在。三岁丧父。"},
-{date:"前 518",title:"开办私学",location:"曲阜",lat:35.60,lng:116.99,desc:"「有教无类」，门徒三千，贤者七十二。"},
-{date:"前 497",title:"去鲁适卫",location:"濮阳",lat:35.75,lng:115.00,desc:"齐归女乐，季桓子受之。孔子行。开始十四年周游。"},
-{date:"前 496",title:"过宋遭难",location:"商丘",lat:34.38,lng:115.65,desc:"司马桓魋欲杀孔子。子曰：「天生德于予，桓魋其如予何？」"},
-{date:"前 489",title:"陈蔡绝粮",location:"上蔡",lat:33.25,lng:114.25,desc:"绝粮七日。子路愠曰：「君子亦有穷乎？」子曰：「君子固穷。」弦歌不辍。",icon:"🍂"},
-{date:"前 484",title:"归鲁修书",location:"曲阜",lat:35.60,lng:116.99,desc:"删《诗》《书》，定《礼》《乐》，修《春秋》。"},
-{date:"前 479",title:"逝世",location:"曲阜",lat:35.60,lng:116.99,desc:"年七十三。「泰山其颓！梁木其坏！哲人其萎！」",icon:"🕯️"}
+{id:"confucius",name:"孔丘",emoji:"📖",color:"#dc9a5c",bio:"前 551–479 · 儒家创始 · 周游列国十四载",events:[
+  {date:"前 551",title:"生于鲁国陬邑",location:"曲阜",lat:35.60,lng:116.99,desc:"父叔梁纥，母颜徵在。三岁丧父。"},
+  {date:"前 518",title:"开办私学",location:"曲阜",lat:35.60,lng:116.99,desc:"「有教无类」，门徒三千，贤者七十二。"},
+  {date:"前 497",title:"去鲁适卫",location:"濮阳",lat:35.75,lng:115.00,desc:"齐归女乐，季桓子受之。孔子行。开始十四年周游。"},
+  {date:"前 496",title:"过宋遭难",location:"商丘",lat:34.38,lng:115.65,desc:"司马桓魋欲杀孔子。子曰：「天生德于予，桓魋其如予何？」"},
+  {date:"前 489",title:"陈蔡绝粮",location:"上蔡",lat:33.25,lng:114.25,desc:"绝粮七日。子路愠曰：「君子亦有穷乎？」子曰：「君子固穷。」弦歌不辍。",icon:"🍂"},
+  {date:"前 484",title:"归鲁修书",location:"曲阜",lat:35.60,lng:116.99,desc:"删《诗》《书》，定《礼》《乐》，修《春秋》。"},
+  {date:"前 479",title:"逝世",location:"曲阜",lat:35.60,lng:116.99,desc:"年七十三。「泰山其颓！梁木其坏！哲人其萎！」",icon:"🕯️"}
 ]},
 {id:"alexander",name:"亚历山大",emoji:"⚔️",color:"#c86060",bio:"前 356–323 · 马其顿国王 · 横扫欧亚非",events:[
-{date:"前 356",title:"诞生于佩拉",location:"佩拉",lat:40.76,lng:22.52,desc:"腓力二世之子。降生之日，阿尔忒弥斯神殿焚毁——「伟大的火焰已燃起。」"},
-{date:"前 334",title:"东征启程",location:"格拉尼库斯",lat:40.35,lng:27.30,desc:"率三万五千精兵渡过赫勒斯滂海峡。将长矛掷入大地——「亚洲，我来了。」",icon:"⚡"},
-{date:"前 333",title:"伊苏斯之战",location:"伊苏斯",lat:36.85,lng:36.20,desc:"大破大流士三世。波斯王弃母妻而逃。亚历山大尊其家眷，曰：「她也是王后。」"},
-{date:"前 332",title:"征服埃及",location:"亚历山大港",lat:31.20,lng:29.92,desc:"兵不血刃入埃及。锡瓦绿洲神谕称其为「神之子」。建亚历山大城。"},
-{date:"前 331",title:"高加米拉决战",location:"埃尔比勒",lat:36.20,lng:44.00,desc:"波斯帝国之终焉。以新月阵形撕裂十万波斯大军。"},
-{date:"前 326",title:"远征印度",location:"海达斯佩斯",lat:32.90,lng:73.70,desc:"鏖战波鲁斯王。士兵思乡，拒绝再进。痛哭三日后回师。",icon:"🐎"},
-{date:"前 323",title:"巴比伦之殇",location:"巴比伦",lat:32.54,lng:44.42,desc:"六月高烧不治，年仅三十三。临终：「遗留给最强者。」",icon:"🕯️"}
+  {date:"前 356",title:"诞生于佩拉",location:"佩拉",lat:40.76,lng:22.52,desc:"腓力二世之子。降生之日，阿尔忒弥斯神殿焚毁。"},
+  {date:"前 334",title:"东征启程",location:"格拉尼库斯",lat:40.35,lng:27.30,desc:"率军渡海。将长矛掷入大地——「亚洲，我来了。」",icon:"⚡"},
+  {date:"前 333",title:"伊苏斯之战",location:"伊苏斯",lat:36.85,lng:36.20,desc:"大败大流士三世。波斯王弃母妻而逃。"},
+  {date:"前 332",title:"征服埃及",location:"亚历山大港",lat:31.20,lng:29.92,desc:"建亚历山大城。神谕称其为「神之子」。"},
+  {date:"前 331",title:"高加米拉决战",location:"埃尔比勒",lat:36.20,lng:44.00,desc:"波斯帝国终焉。以四万七千破十万波斯大军。"},
+  {date:"前 326",title:"远征印度",location:"海达斯佩斯",lat:32.90,lng:73.70,desc:"士兵思乡拒绝再进。痛哭三日后回师。",icon:"🐎"},
+  {date:"前 323",title:"巴比伦之殇",location:"巴比伦",lat:32.54,lng:44.42,desc:"年仅三十三。临终：「遗留给最强者。」",icon:"🕯️"}
 ]},
 {id:"xuanzang",name:"玄奘",emoji:"🙏",color:"#d4a060",bio:"602–664 · 唐代高僧 · 西行五万里",events:[
-{date:"602",title:"生于洛阳",location:"洛阳",lat:34.62,lng:112.45,desc:"俗姓陈，名祎。十三岁出家。誓往天竺求取真经。"},
-{date:"629",title:"偷渡玉门关",location:"瓜州",lat:40.25,lng:96.00,desc:"贞观三年冒越宪章。孤身走入八百里流沙。「不达天竺，终不东归。」",icon:"🚶"},
-{date:"630",title:"莫贺延碛",location:"高昌",lat:42.95,lng:89.18,desc:"八百里流沙绝无水草。四夜五日滴水未进。高昌王结为兄弟。"},
-{date:"631",title:"翻越葱岭",location:"撒马尔罕",lat:39.65,lng:66.95,desc:"帕米尔高原终年积雪，七日方过。同行冻毙过半。"},
-{date:"631秋",title:"入那烂陀寺",location:"那烂陀",lat:25.12,lng:85.48,desc:"百岁戒贤法师亲为开讲《瑜伽师地论》，历时十五月。"},
-{date:"643",title:"曲女城辩经",location:"曲女城",lat:27.47,lng:80.25,desc:"十八国王、三千僧众。悬「真唯识量」，十八日无人能破。",icon:"🏆"},
-{date:"645",title:"归国抵长安",location:"长安",lat:34.26,lng:108.94,desc:"去国十七年，携回梵经六百五十七部。长安万人空巷。"},
-{date:"664",title:"玉华寺圆寂",location:"玉华寺",lat:35.20,lng:109.10,desc:"译经千三百三十五卷。弥留之际：「决定得生。」",icon:"🕯️"}
+  {date:"602",title:"生于洛阳",location:"洛阳",lat:34.62,lng:112.45,desc:"俗姓陈，名祎。十三岁出家。誓往天竺。"},
+  {date:"629",title:"偷渡玉门关",location:"瓜州",lat:40.25,lng:96.00,desc:"「不达天竺，终不东归。」孤身走入八百里流沙。",icon:"🚶"},
+  {date:"630",title:"莫贺延碛",location:"高昌",lat:42.95,lng:89.18,desc:"四夜五日滴水未进。老马识途，高昌王结为兄弟。"},
+  {date:"631",title:"翻越葱岭",location:"撒马尔罕",lat:39.65,lng:66.95,desc:"帕米尔高原七日方过，同行冻毙过半。"},
+  {date:"631秋",title:"入那烂陀寺",location:"那烂陀",lat:25.12,lng:85.48,desc:"百岁戒贤法师亲为开讲《瑜伽师地论》。"},
+  {date:"643",title:"曲女城辩经",location:"曲女城",lat:27.47,lng:80.25,desc:"十八日无人能破「真唯识量」。",icon:"🏆"},
+  {date:"645",title:"归国抵长安",location:"长安",lat:34.26,lng:108.94,desc:"去国十七年，长安万人空巷。"},
+  {date:"664",title:"玉华寺圆寂",location:"玉华寺",lat:35.20,lng:109.10,desc:"译经千三百三十五卷。「决定得生。」",icon:"🕯️"}
 ]},
 {id:"zhenghe",name:"郑和",emoji:"⛵",color:"#5a90b0",bio:"1371–1433 · 明代航海家 · 七下西洋",events:[
-{date:"1371",title:"生于昆阳",location:"昆明",lat:25.04,lng:102.70,desc:"回族，本姓马。幼年被掳入燕王府为宦官，赐姓郑。"},
-{date:"1405",title:"首下西洋",location:"南京",lat:32.06,lng:118.80,desc:"船队二百零八艘、将士二万七千八百人启航。宝船长四十四丈。",icon:"🚢"},
-{date:"1406",title:"抵印度古里",location:"卡利卡特",lat:11.25,lng:75.77,desc:"经占城、爪哇、满剌加，至东西方海上贸易十字路口。"},
-{date:"1409",title:"锡兰山立碑",location:"锡兰山",lat:6.93,lng:79.85,desc:"以中、泰米尔、波斯三语立《布施锡兰山佛寺碑》。"},
-{date:"1414",title:"麒麟献瑞",location:"霍尔木兹",lat:27.10,lng:56.45,desc:"抵波斯湾。从东非带回长颈鹿，明人以为麒麟现世。",icon:"🦒"},
-{date:"1417",title:"抵达东非",location:"马林迪",lat:-3.22,lng:40.12,desc:"舰队驶入东非海岸。欧洲人近百年后才绕好望角入印度洋。"},
-{date:"1421",title:"分遣队抵麦加",location:"麦加",lat:21.42,lng:39.83,desc:"洪保等七人赴天方国，抵伊斯兰圣地麦加朝圣。"},
-{date:"1433",title:"归途病逝",location:"古里",lat:11.25,lng:75.77,desc:"第七次远航归国途中病逝。年六十二。宝船图纸失传。",icon:"🕯️"}
+  {date:"1371",title:"生于昆阳",location:"昆明",lat:25.04,lng:102.70,desc:"回族，本姓马。幼年被掳为宦官，赐姓郑。"},
+  {date:"1405",title:"首下西洋",location:"南京",lat:32.06,lng:118.80,desc:"宝船长四十四丈——空前绝后。",icon:"🚢"},
+  {date:"1406",title:"抵印度古里",location:"卡利卡特",lat:11.25,lng:75.77,desc:"东西方海上贸易的十字路口。"},
+  {date:"1409",title:"锡兰山立碑",location:"锡兰山",lat:6.93,lng:79.85,desc:"三语石碑，今藏科伦坡博物馆。"},
+  {date:"1414",title:"麒麟献瑞",location:"霍尔木兹",lat:27.10,lng:56.45,desc:"东非长颈鹿，明人以为麒麟现世。",icon:"🦒"},
+  {date:"1417",title:"抵达东非",location:"马林迪",lat:-3.22,lng:40.12,desc:"早于欧洲人近百年。"},
+  {date:"1421",title:"分遣队抵麦加",location:"麦加",lat:21.42,lng:39.83,desc:"洪保等七人赴麦加朝圣。"},
+  {date:"1433",title:"归途病逝",location:"古里",lat:11.25,lng:75.77,desc:"宝船图纸失传，航海日志被焚。",icon:"🕯️"}
 ]},
 {id:"napoleon",name:"拿破仑",emoji:"🎩",color:"#7070a5",bio:"1769–1821 · 法兰西皇帝 · 改写欧洲",events:[
-{date:"1769",title:"生于科西嘉",location:"阿雅克肖",lat:41.92,lng:8.74,desc:"生于科西嘉没落贵族。十岁入军校，擅数学。"},
-{date:"1796",title:"意大利封神",location:"米兰",lat:45.46,lng:9.19,desc:"二十六岁司令。以少胜多屡破奥军。士兵爱称「小班长」。",icon:"⭐"},
-{date:"1798",title:"远征埃及",location:"开罗",lat:30.04,lng:31.23,desc:"金字塔下大败马穆鲁克。「四千年的历史在注视你们！」发现罗塞塔石碑。"},
-{date:"1804",title:"加冕称帝",location:"巴黎",lat:48.86,lng:2.35,desc:"从教皇手中夺过皇冠自行加冕。贝多芬愤而划掉第三交响曲题献。"},
-{date:"1805",title:"奥斯特里茨",location:"奥斯特里茨",lat:49.13,lng:16.77,desc:"「三皇会战」。一天之内打垮俄奥联军。",icon:"👑"},
-{date:"1812",title:"莫斯科大火",location:"莫斯科",lat:55.75,lng:37.62,desc:"六十万大军远征。占空城后大火冲天。冬季撤退仅三万人归。",icon:"❄️"},
-{date:"1815",title:"滑铁卢终局",location:"滑铁卢",lat:50.68,lng:4.40,desc:"百日王朝终点。布吕歇尔援军猝至。「命运抛弃了我。」"},
-{date:"1821",title:"圣赫勒拿",location:"圣赫勒拿岛",lat:-15.95,lng:-5.72,desc:"流放南大西洋绝岛。临终：「法兰西……军队……约瑟芬……」",icon:"🕯️"}
+  {date:"1769",title:"生于科西嘉",location:"阿雅克肖",lat:41.92,lng:8.74,desc:"十岁入军校，擅数学。"},
+  {date:"1796",title:"意大利封神",location:"米兰",lat:45.46,lng:9.19,desc:"二十六岁司令。士兵爱称「小班长」。",icon:"⭐"},
+  {date:"1798",title:"远征埃及",location:"开罗",lat:30.04,lng:31.23,desc:"金字塔下大败马穆鲁克。发现罗塞塔石碑。"},
+  {date:"1804",title:"加冕称帝",location:"巴黎",lat:48.86,lng:2.35,desc:"夺过皇冠自行加冕。贝多芬愤而划掉题献。"},
+  {date:"1805",title:"奥斯特里茨",location:"奥斯特里茨",lat:49.13,lng:16.77,desc:"「三皇会战」。",icon:"👑"},
+  {date:"1812",title:"莫斯科大火",location:"莫斯科",lat:55.75,lng:37.62,desc:"六十万大军仅三万人归。",icon:"❄️"},
+  {date:"1815",title:"滑铁卢终局",location:"滑铁卢",lat:50.68,lng:4.40,desc:"布吕歇尔援军猝至。「命运抛弃了我。」"},
+  {date:"1821",title:"圣赫勒拿岛",location:"圣赫勒拿岛",lat:-15.95,lng:-5.72,desc:"临终：「法兰西……军队……约瑟芬……」",icon:"🕯️"}
 ]}
 ];
 
-var cur,step=-1,playing=false,timer,animId;
-var markers=[],pathLines=[],traveler=null;
+var cur,step=-1,playing=false,timer,animId,markers=[],lines=[],traveler=null;
 
 var map=L.map("map",{center:[25,40],zoom:2,minZoom:2,zoomControl:false,attributionControl:false});
 L.control.zoom({position:"bottomright"}).addTo(map);
-L.control.attribution({position:"bottomright",prefix:"Stadia · OSM"}).addTo(map);
-L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=0527f667-2df8-400a-9740-60ba02ef9b35",{maxZoom:18}).addTo(map);
+L.control.attribution({position:"bottomright",prefix:!1}).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:"CARTO · OSM"}).addTo(map);
 
-function bezierPath(p1,p2,seg){
-  seg=seg||50;var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;
-  var off=Math.min(4,0.8/Math.abs(p2[0]-p1[0]||1));
-  var ctrl=[mlat+off,mlng+(Math.random()-0.5)*3];var pts=[];
-  for(var i=0;i<=seg;i++){var t=i/seg;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
-  return pts;
-}
-
-function createTraveler(){
-  return L.marker([0,0],{icon:L.divIcon({html:'<div id="travelerDot" style="width:14px;height:14px;border-radius:50%;background:#f0c040;box-shadow:0 0 18px #f0c040,0 0 36px rgba(240,192,64,0.5);transform:translate(-50%,-50%);transition:none"></div>',className:'',iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:9999});
-}
+function bezierPath(p1,p2,s){s=s||50;var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2,off=Math.min(4,.8/Math.abs(p2[0]-p1[0]||1)),ctrl=[mlat+off,mlng+(Math.random()-.5)*3],pts=[];for(var i=0;i<=s;i++){var t=i/s;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}return pts}
+function mkTraveler(){return L.marker([0,0],{icon:L.divIcon({html:'<div class="traveler" style="width:14px;height:14px;border-radius:50%;background:#f0c040;box-shadow:0 0 18px #f0c040,0 0 36px rgba(240,192,64,.5);transform:translate(-50%,-50%)"></div>',className:"",iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:9999})}
 
 var fb=document.getElementById("figureBar");
-people.forEach(function(p){
-  var c=document.createElement("div");c.className="chip";c.id="chip-"+p.id;
-  c.innerHTML='<div class="dot" style="background:'+p.color+'">'+p.emoji+'</div>'+p.name;
-  c.onclick=function(){select(p.id)};fb.appendChild(c);
-});
+people.forEach(function(p){var c=document.createElement("div");c.className="chip";c.id="chip-"+p.id;c.innerHTML='<div class="dot" style="background:'+p.color+'">'+p.emoji+'</div>'+p.name;c.onclick=function(){select(p.id)};fb.appendChild(c)});
 
-function select(id){
-  if(cur&&cur.id===id)return;stop();cur=people.find(function(p){return p.id===id});step=-1;
-  if(traveler)map.removeLayer(traveler);traveler=null;
-  document.querySelectorAll(".chip").forEach(function(c){c.classList.remove("active")});
-  document.getElementById("chip-"+id).classList.add("active");
-  document.getElementById("figureName").textContent=cur.emoji+" "+cur.name;
-  document.getElementById("figureBio").textContent=cur.bio;
-  document.getElementById("btnPlay").textContent="▶";
-  document.getElementById("btnPlay").classList.remove("playing");
-  renderTL();renderMap();fitBounds();updateInfo();
-  document.getElementById("mapInfo").textContent="◈ "+cur.events.length+" 步 · 点击播放";
-}
+function select(id){if(cur&&cur.id===id)return;stop();cur=people.find(function(p){return p.id===id});step=-1;if(traveler)map.removeLayer(traveler);traveler=null;document.querySelectorAll(".chip").forEach(function(c){c.classList.remove("active")});document.getElementById("chip-"+id).classList.add("active");document.getElementById("figureName").textContent=cur.emoji+" "+cur.name;document.getElementById("figureBio").textContent=cur.bio;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing");renderTL();renderMap();fitBounds();updateInfo();document.getElementById("mapInfo").textContent="◈ "+cur.events.length+" 步 · 点击播放";setTimeout(function(){document.getElementById("loading").classList.add("hide")},300)}
 
-function renderTL(){
-  var el=document.getElementById("timeline");el.innerHTML="";if(!cur)return;
-  cur.events.forEach(function(e,i){
-    var d=document.createElement("div");d.className="tl-item";d.id="tl-"+i;
-    d.innerHTML='<span class="tl-step">'+(i+1)+'</span><div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';
-    d.onclick=function(){goto(i)};el.appendChild(d);
-  });
-}
+function renderTL(){var el=document.getElementById("timeline");el.innerHTML="";if(!cur)return;cur.events.forEach(function(e,i){var d=document.createElement("div");d.className="tl-item";d.id="tl-"+i;d.innerHTML='<span class="tl-step">'+(i+1)+'</span><div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';d.onclick=function(){goto(i)};el.appendChild(d)})}
 
-function renderMap(){
-  markers.forEach(function(m){map.removeLayer(m)});pathLines.forEach(function(l){map.removeLayer(l)});
-  if(traveler)map.removeLayer(traveler);traveler=null;
-  markers=[];pathLines=[];if(!cur)return;
-  var coords=cur.events.map(function(e){return[e.lat,e.lng]});
-  for(var i=0;i<coords.length-1;i++){
-    (function(p1,p2){
-      var pts=bezierPath(p1,p2);
-      pathLines.push(L.polyline(pts,{color:cur.color,weight:1.5,opacity:0.25,dashArray:"6 8",interactive:false}).addTo(map));
-    })(coords[i],coords[i+1]);
-  }
-  cur.events.forEach(function(e,i){
-    var m=L.circleMarker([e.lat,e.lng],{radius:5,fillColor:cur.color,color:"#fff",weight:1.5,fillOpacity:0.75}).addTo(map);
-    m.bindPopup('<div style="font-family:Inter,PingFang SC,sans-serif;min-width:200px;padding:2px"><div style="font-size:15px;font-weight:600;margin-bottom:4px">'+(e.icon||"")+" "+e.title+'</div><div style="font-size:11px;color:#888">'+e.location+' · '+e.date+'</div><div style="font-size:12px;margin-top:6px;line-height:1.6;color:#666">'+e.desc+'</div></div>',{maxWidth:280,className:"custom-popup"});
-    markers.push(m);
-  });
-}
+function renderMap(){markers.forEach(function(m){map.removeLayer(m)});lines.forEach(function(l){map.removeLayer(l)});if(traveler)map.removeLayer(traveler);traveler=null;markers=[];lines=[];if(!cur)return;var coords=cur.events.map(function(e){return[e.lat,e.lng]});for(var i=0;i<coords.length-1;i++){(function(p1,p2){var pts=bezierPath(p1,p2);lines.push(L.polyline(pts,{color:cur.color,weight:1.5,opacity:.2,dashArray:"6 8",interactive:!1}).addTo(map))})(coords[i],coords[i+1])}cur.events.forEach(function(e,i){var m=L.circleMarker([e.lat,e.lng],{radius:5,fillColor:cur.color,color:"#fff",weight:1.5,fillOpacity:.7}).addTo(map);m.bindPopup('<div style="font-family:Urbanist,Noto Sans SC,sans-serif;min-width:200px;padding:2px"><div style="font-size:15px;font-weight:600;margin-bottom:4px;color:#e0d6c5">'+(e.icon||"")+" "+e.title+'</div><div style="font-size:11px;color:#9ca3af">'+e.location+' · '+e.date+'</div><div style="font-size:12px;line-height:1.6;color:#6b7280;margin-top:6px">'+e.desc+'</div></div>',{maxWidth:280,className:"custom-popup"});markers.push(m)})}
 
-function goto(i){
-  if(!cur||i<0||i>=cur.events.length)return;var prev=step;step=i;var e=cur.events[i];
-  document.querySelectorAll(".tl-item").forEach(function(el,j){el.classList.remove("active","done");if(j<i)el.classList.add("done");if(j===i)el.classList.add("active")});
-  var tli=document.getElementById("tl-"+i);if(tli)tli.scrollIntoView({behavior:"smooth",block:"center"});
-  markers.forEach(function(m,j){var is=j===i;m.setRadius(is?8:5);m.setStyle({fillColor:is?"#f0c040":cur.color,color:is?"#f0c040":"#fff",weight:is?3:1.5,fillOpacity:is?1:0.75});if(is)m.bringToFront()});
-  if(!traveler){traveler=createTraveler();traveler.addTo(map)}
-  if(prev>=0&&prev!==i){
-    var from=cur.events[prev];var path=bezierPath([from.lat,from.lng],[e.lat,e.lng],80);
-    var frame=0,total=path.length;cancelAnimationFrame(animId);
-    function af(){if(frame>=total){traveler.setLatLng([e.lat,e.lng]);return}traveler.setLatLng(path[frame]);frame+=2;animId=requestAnimationFrame(af)}
-    af();
-  }else{traveler.setLatLng([e.lat,e.lng])}
-  var toast=document.getElementById("mapToast");toast.textContent=(e.icon||"")+" "+e.title+"  ·  "+e.date;
-  toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},3500);
-  updateInfo();
-}
+function goto(i){if(!cur||i<0||i>=cur.events.length)return;var prev=step;step=i;var e=cur.events[i];document.querySelectorAll(".tl-item").forEach(function(el,j){el.classList.remove("active","done");if(j<i)el.classList.add("done");if(j===i)el.classList.add("active")});var tli=document.getElementById("tl-"+i);if(tli)tli.scrollIntoView({behavior:"smooth",block:"center"});markers.forEach(function(m,j){var is=j===i;m.setRadius(is?8:5);m.setStyle({fillColor:is?"#f0c040":cur.color,color:is?"#f0c040":"#fff",weight:is?3:1.5,fillOpacity:is?1:.7});if(is)m.bringToFront()});if(!traveler){traveler=mkTraveler();traveler.addTo(map)}if(prev>=0&&prev!==i){var from=cur.events[prev];var path=bezierPath([from.lat,from.lng],[e.lat,e.lng],80);var f=0;cancelAnimationFrame(animId);function af(){if(f>=path.length){traveler.setLatLng([e.lat,e.lng]);return}traveler.setLatLng(path[f]);f+=2;animId=requestAnimationFrame(af)}af()}else{traveler.setLatLng([e.lat,e.lng])}var toast=document.getElementById("mapToast");toast.textContent=(e.icon||"")+" "+e.title+" · "+e.date;toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("show")},3500);updateInfo()}
 
 function updateInfo(){if(!cur){document.getElementById("playInfo").textContent="0/0";return}document.getElementById("playInfo").textContent=(step+1)+"/"+cur.events.length;if(step>=0)document.getElementById("mapInfo").textContent=cur.events[step].location+" · "+cur.events[step].date}
 
 function start(){if(!cur)return;if(step>=cur.events.length-1)step=-1;playing=true;document.getElementById("btnPlay").textContent="⏸";document.getElementById("btnPlay").classList.add("playing");advance()}
 function stop(){playing=false;if(timer)clearTimeout(timer);timer=null;document.getElementById("btnPlay").textContent="▶";document.getElementById("btnPlay").classList.remove("playing")}
 function advance(){if(!playing)return;var n=step+1;if(n>=cur.events.length){stop();return}goto(n);timer=setTimeout(advance,3500)}
-function fitBounds(){if(!cur)return;var coords=cur.events.map(function(e){return[e.lat,e.lng]});map.flyToBounds(L.latLngBounds(coords).pad(0.25),{duration:1.2,maxZoom:6});markers.forEach(function(m){m.setRadius(5);m.setStyle({fillColor:cur.color,color:"#fff",weight:1.5,fillOpacity:0.75})});document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active","done")});step=-1;updateInfo();document.getElementById("mapInfo").textContent="◈ 全景 · 点击播放"}
+function fitBounds(){if(!cur)return;var coords=cur.events.map(function(e){return[e.lat,e.lng]});map.flyToBounds(L.latLngBounds(coords).pad(.25),{duration:1.2,maxZoom:6});markers.forEach(function(m){m.setRadius(5);m.setStyle({fillColor:cur.color,color:"#fff",weight:1.5,fillOpacity:.7})});document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active","done")});step=-1;updateInfo();document.getElementById("mapInfo").textContent="◈ 全景 · 点击播放"}
 
 document.getElementById("btnPrev").onclick=function(){stop();if(cur&&step>0)goto(step-1)};
 document.getElementById("btnNext").onclick=function(){stop();if(cur&&step<cur.events.length-1)goto(step+1)};
@@ -254,6 +195,6 @@ document.addEventListener("keydown",function(ev){if(!cur)return;if(ev.key==="Arr
 
 select("confucius");
 </script>
-<div style="position:fixed;bottom:8px;right:12px;z-index:9999;font-size:10px;font-family:monospace;color:rgba(0,0,0,0.15);pointer-events:none">2026-06-28 19:00:29</div>
+<div style="position:fixed;bottom:8px;right:12px;z-index:9999;font-size:10px;font-family:monospace;color:rgba(255,255,255,.08);pointer-events:none">2026-06-28 19:11:52</div>
 </body>
 </html>
