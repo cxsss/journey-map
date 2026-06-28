@@ -1,3 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>历史长廊 · 轨迹地图</title>
+<meta name="theme-color" content="#0a0a12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&amp;family=Noto+Sans+SC:wght@300;400;500;600;700&amp;family=Noto+Serif+SC:wght@600;700;900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+:root{--bg:#0a0a12;--surface:#16161e;--surface-2:#1e1e2a;--border:rgba(255,255,255,.06);--border-strong:rgba(255,255,255,.1);--text:#fff;--text-2:#9ca3af;--text-3:#6b7280;--gold:#dc9a5c;--gold-soft:rgba(220,154,92,.15);--gold-border:#d4af37;--charcoal:#36454f;--rose:#c86060;--amber:#f0c040}
+body{font-family:"Urbanist","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3);min-width:40px;min-height:40px}
+.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+.app-loading.hide{opacity:0;pointer-events:none}
+.loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.topbar{display:flex;align-items:center;padding:12px 24px;gap:6px;background:rgba(10,10,18,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;z-index:10;position:relative}
+.topbar::-webkit-scrollbar{height:0}
+.chip{display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:24px;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:all .4s;font-size:14px;font-weight:400;color:var(--text-2);flex-shrink:0}
+.chip:hover{border-color:var(--border-strong);color:var(--text)}
+.chip.active{background:var(--gold-soft);border-color:rgba(220,154,92,.25);color:var(--gold)}
+.chip .dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+.sidebar{width:340px;min-width:340px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5}
+.sidebar-head{padding:14px 20px 10px;border-bottom:1px solid var(--border)}
+.sidebar-head .kicker{font-size:10px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:2px}
+.sidebar-head h2{font-family:"Noto Serif SC",serif;font-size:17px;font-weight:700;letter-spacing:2px;color:#e0d8cc}
+.sidebar-head .bio{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.5}
+.timeline{flex:1;overflow-y:auto;padding:8px 12px 12px 18px;scroll-behavior:smooth}
+.tl-item{position:relative;padding:11px 0 11px 22px;cursor:pointer;border-radius:6px;margin:1px 0;transition:all .4s}
+.tl-item:hover{background:rgba(255,255,255,.02)}
+.tl-item.active{background:var(--gold-soft)}
+.tl-item.done{opacity:.5}
+.tl-item::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item:first-child::before{top:17px}
+.tl-item:last-child::before{bottom:calc(100% - 17px)}
+.tl-item::after{content:"";position:absolute;left:2px;top:18px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--border-strong);transition:all .4s;z-index:1}
+.tl-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(220,154,92,.5);transform:scale(1.3)}
+.tl-item.done::after{border-color:var(--gold);opacity:.4}
+.tl-step{position:absolute;left:-14px;top:14px;font-size:8px;font-weight:700;color:var(--text-3);width:16px;text-align:center}
+.tl-date{font-size:9px;font-weight:500;color:var(--text-3);margin-bottom:2px;letter-spacing:.5px}
+.tl-title{font-size:12px;font-weight:500;line-height:1.4}
+.tl-loc{font-size:10px;font-weight:400;color:var(--text-2);margin-top:2px}
+.map-wrap{flex:1;position:relative}
+#map{width:100%;height:100%;filter:brightness(1) contrast(100%)}
+.layer-ctrl{position:absolute;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:2px;background:rgba(22,22,30,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:10px;padding:4px}
+.layer-btn{width:34px;height:34px;border:1px solid transparent;border-radius:7px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .3s;color:var(--text-3);padding:0;position:relative}
+.layer-btn:hover{border-color:var(--border-strong);background:rgba(255,255,255,.03)}
+.layer-btn.active{border-color:var(--gold-border);background:rgba(212,175,55,.08);color:var(--gold);box-shadow:0 0 12px rgba(212,175,55,.06)}
+.layer-btn .tip{position:absolute;right:42px;background:rgba(22,22,30,.92);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;white-space:nowrap;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .2s}
+.layer-btn:hover .tip{opacity:1}
+.ctrl-bar{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:6px;align-items:center;background:rgba(22,22,30,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:14px;padding:8px 14px}
+.ctrl-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .3s}
+.ctrl-btn:hover{border-color:var(--border-strong);color:var(--text)}
+.ctrl-btn.play{width:34px;height:34px;border-radius:50%;background:rgba(220,154,92,.12);border-color:rgba(220,154,92,.3);color:var(--gold);font-size:14px}
+.ctrl-btn.play:hover{border-color:rgba(220,154,92,.5);background:rgba(220,154,92,.18)}
+.ctrl-btn.play.playing{background:rgba(240,192,64,.15);border-color:rgba(240,192,64,.4);color:var(--amber)}
+.ctrl-info{font-size:10px;color:var(--text-3);padding:0 6px;min-width:40px;text-align:center}
+.map-info{position:absolute;top:66px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(22,22,30,.75);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:8px;padding:5px 14px;font-size:10px;color:var(--text-3);pointer-events:none}
+#mapToast{position:absolute;top:96px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(22,22,30,.8);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:10px;padding:8px 18px;font-size:12px;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .4s}
+#mapToast.show{opacity:1}
+.journey-marker{background:transparent!important;border:none!important}
+.journey-marker .marker-body{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid var(--gold-border);box-shadow:0 0 10px rgba(212,175,55,.12),0 2px 6px rgba(0,0,0,.35);transition:all .3s;position:relative}
+.journey-marker .marker-body.active{width:34px;height:34px;font-size:15px;border-color:#f0c040;box-shadow:0 0 20px rgba(240,192,64,.3),0 2px 10px rgba(0,0,0,.45)}
+.traveler{width:14px;height:14px;border-radius:50%;background:var(--amber);box-shadow:0 0 18px var(--amber),0 0 36px rgba(240,192,64,.5);transform:translate(-50%,-50%)}
+.leaflet-popup-content-wrapper{padding:0;border-radius:10px!important;background:rgba(22,22,30,.92)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-strong);overflow:hidden}
+.leaflet-popup-content{margin:0!important;min-width:160px!important;width:auto!important}
+.leaflet-popup-content .popup-inner{padding:14px 16px}
+.leaflet-popup-content .popup-title{font-size:14px;font-weight:600;color:#e0d8cc;margin-bottom:2px}
+.leaflet-popup-content .popup-meta{font-size:10px;color:var(--text-3);letter-spacing:.5px}
+.leaflet-popup-content .popup-desc{font-size:11px;color:var(--text-2);line-height:1.5;margin-top:6px}
+.leaflet-popup-tip-container{opacity:0!important}
+.leaflet-popup-close-button{color:var(--text-3)!important;top:6px!important;right:6px!important;font-size:14px!important}
+.leaflet-popup-close-button:hover{color:var(--text)!important}
+</style>
+</head>
+<body>
 <div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="topbar" id="figureBar"></div>
 <div class="main">
@@ -35,26 +118,46 @@ var tileProviders=[
 ];
 var people=[
   {id:"confucius",name:"孔子",emoji:"🌐",color:"#dc9a5c",bio:"公元前551—前479 · 周游列国十四载",events:[
-    {date:"前551",title:"生于鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"\"吾少也贱，故多能鄙事。\""},{date:"前517",title:"适齐",location:"临淄",lat:36.82,lng:118.32,desc:"闻《韶》三月不知肉味。"},{date:"前501",title:"中都宰",location:"曲阜",lat:35.60,lng:116.99,desc:"治理中都，路不拾遗。"},
-    {date:"前497",title:"去鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"辞官而去，周游之始。",icon:"✈"},{date:"前497",title:"适卫",location:"濮阳",lat:35.70,lng:115.03,desc:"卫灵公待之，然不能用。"},
-    {date:"前493",title:"过宋",location:"商丘",lat:34.44,lng:115.65,desc:"宋司马桓魋欲杀之。",icon:"⚠"},{date:"前492",title:"至陈",location:"淮阳",lat:33.73,lng:114.89,desc:"居陈三载，绝粮之际弦歌不辍。",icon:"🎵"},
-    {date:"前489",title:"蔡地",location:"上蔡",lat:33.25,lng:114.26,desc:"楚昭王欲封以书社。"},{date:"前484",title:"归鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"十四年归，删述六经。",icon:"📚"},
-    {date:"前479",title:"薨",location:"曲阜",lat:35.60,lng:116.99,desc:"\"泰山其颓乎！梁木其坏乎！哲人其萎乎！\""}]},
+    {date:"前551",title:"生于鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"“吾少也贱，故多能鄙事。”"},
+    {date:"前517",title:"适齐",location:"临淄",lat:36.82,lng:118.32,desc:"闻《韶》三月不知肉味。"},
+    {date:"前501",title:"中都宰",location:"曲阜",lat:35.60,lng:116.99,desc:"治理中都，路不拾遗。"},
+    {date:"前497",title:"去鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"辞官而去，周游之始。",icon:"✈"},
+    {date:"前497",title:"适卫",location:"澮阳",lat:35.70,lng:115.03,desc:"卫灵公待之，然不能用。"},
+    {date:"前493",title:"过宋",location:"商丘",lat:34.44,lng:115.65,desc:"宋司马桓雋欲杀之。",icon:"⚠"},
+    {date:"前492",title:"至陈",location:"淮阳",lat:33.73,lng:114.89,desc:"居陈三载，绝粮之际弦歌不辍。",icon:"🎵"},
+    {date:"前489",title:"蔡地",location:"上蔡",lat:33.25,lng:114.26,desc:"楚昭王欲封以书社。"},
+    {date:"前484",title:"归鲁",location:"曲阜",lat:35.60,lng:116.99,desc:"十四年归，删述六经。",icon:"📚"},
+    {date:"前479",title:"薙",location:"曲阜",lat:35.60,lng:116.99,desc:"“泰山其颓乎！梁木其坏乎！哲人其萎乎！”"}
+  ]},
   {id:"napoleon",name:"拿破仑",emoji:"👑",color:"#c86060",bio:"1769—1821 · 法兰西第一帝国皇帝",events:[
-    {date:"1769",title:"生于科西嘉",location:"阿雅克肖",lat:41.92,lng:8.74,desc:"十岁入军校，擅数学。"},{date:"1796",title:"意大利封神",location:"米兰",lat:45.46,lng:9.19,desc:"二十六岁司令。士兵爱称「小班长」。",icon:"⭐"},
-    {date:"1798",title:"远征埃及",location:"开罗",lat:30.04,lng:31.23,desc:"金字塔下大败马穆鲁克。发现罗塞塔石碑。"},{date:"1804",title:"加冕称帝",location:"巴黎",lat:48.86,lng:2.35,desc:"夺过皇冠自行加冕。贝多芬愤而划掉题献。"},
-    {date:"1805",title:"奥斯特里茨",location:"奥斯特里茨",lat:49.13,lng:16.77,desc:"「三皇会战」",icon:"👑"},{date:"1812",title:"莫斯科大火",location:"莫斯科",lat:55.75,lng:37.62,desc:"六十万大军仅三万人归。",icon:"❄️"},
-    {date:"1815",title:"滑铁卢终局",location:"滑铁卢",lat:50.68,lng:4.40,desc:"布吕歇尔援军猝至。「命运抛弃了我。」"},{date:"1821",title:"圣赫勒拿岛",location:"圣赫勒拿岛",lat:-15.95,lng:-5.72,desc:"临终：「法兰西……军队……约瑟芬……」",icon:"🕯️"}]},
+    {date:"1769",title:"生于科西嘉",location:"阿雅克肖",lat:41.92,lng:8.74,desc:"十岁入军校，擅数学。"},
+    {date:"1796",title:"意大利封神",location:"米兰",lat:45.46,lng:9.19,desc:"二十六岁司令。士兵爱称「小班长」。",icon:"⭐"},
+    {date:"1798",title:"远征埃及",location:"开罗",lat:30.04,lng:31.23,desc:"金字塔下大败马穆鲁克。发现罗塞塔石碑。"},
+    {date:"1804",title:"加冕称帝",location:"巴黎",lat:48.86,lng:2.35,desc:"夺过皇冠自行加冕。贝多芬愤而划掉题献。"},
+    {date:"1805",title:"奥斯特里茨",location:"奥斯特里茨",lat:49.13,lng:16.77,desc:"「三皇会战」",icon:"👑"},
+    {date:"1812",title:"莫斯科大火",location:"莫斯科",lat:55.75,lng:37.62,desc:"六十万大军仅三人归。",icon:"❄️"},
+    {date:"1815",title:"滑铁卢终局",location:"滑铁卢",lat:50.68,lng:4.40,desc:"布吕歇尔援军猝至。「命运抛弃了我。」"},
+    {date:"1821",title:"圣赫勒拿岛",location:"圣赫勒拿岛",lat:-15.95,lng:-5.72,desc:"临终：「法兰西……军队……约瑟芬……」",icon:"🕯️"}
+  ]},
   {id:"zhenghe",name:"郑和",emoji:"⛵",color:"#4a90d9",bio:"1371—1433 · 七下西洋",events:[
-    {date:"1371",title:"生于滇",location:"昆明",lat:25.03,lng:102.69,desc:"马氏，回族人。"},{date:"1405",title:"首航",location:"苏州",lat:31.31,lng:120.62,desc:"208艘宝船，两万七千人。",icon:"⛵"},
-    {date:"1407",title:"抵古里",location:"科泽科德",lat:11.25,lng:75.78,desc:"印度西南岸，立碑纪念。"},{date:"1409",title:"锡兰山",location:"科伦坡",lat:6.93,lng:79.84,desc:"擒亚烈苦奈儿王。"},
-    {date:"1413",title:"忽鲁谟斯",location:"霍尔木兹",lat:27.05,lng:56.01,desc:"波斯湾口，天堂般的市场。",icon:"🏺"},{date:"1421",title:"东非",location:"马林迪",lat:-3.22,lng:40.11,desc:"抵达肯尼亚，长颈鹿随船回国。"},
-    {date:"1433",title:"归途",location:"古里",lat:11.25,lng:75.78,desc:"第七次返航途中病逝。葬于异乡。"}]},
+    {date:"1371",title:"生于滇",location:"昆明",lat:25.03,lng:102.69,desc:"马氏，回族人。"},
+    {date:"1405",title:"首航",location:"苏州",lat:31.31,lng:120.62,desc:"208艘宝船，两万七千人。",icon:"⛵"},
+    {date:"1407",title:"抵古里",location:"科泽科德",lat:11.25,lng:75.78,desc:"印度西南岸，立碑纪念。"},
+    {date:"1409",title:"锡兰山",location:"科伦坡",lat:6.93,lng:79.84,desc:"擒亚烈苦奈儿王。"},
+    {date:"1413",title:"忽鲁谟斯",location:"霍尔木兹",lat:27.05,lng:56.01,desc:"波斯湾口，天堂般的市场。",icon:"🏺"},
+    {date:"1421",title:"东非",location:"马林迪",lat:-3.22,lng:40.11,desc:"抵达肯尼亚，长颈鹿随船回国。"},
+    {date:"1433",title:"归途",location:"古里",lat:11.25,lng:75.78,desc:"第七次返航途中病逝。葬于异乡。"}
+  ]},
   {id:"marco",name:"马可·波罗",emoji:"🚜",color:"#6bb86b",bio:"1254—1324 · 丝路行者",events:[
-    {date:"1254",title:"生于威尼斯",location:"威尼斯",lat:45.44,lng:12.32,desc:"商人家庭，一见东方。"},{date:"1271",title:"启程东行",location:"威尼斯",lat:45.44,lng:12.32,desc:"十七岁随父叔出发。",icon:"⛵"},
-    {date:"1275",title:"上都觐见",location:"正蓝旗",lat:42.24,lng:115.99,desc:"忽必烈甚喜，命仕元朝。",icon:"👑"},{date:"1275",title:"大都",location:"北京",lat:39.90,lng:116.40,desc:"学蒙语，受重用。"},
-    {date:"1292",title:"护送归途",location:"泉州",lat:24.87,lng:118.68,desc:"护送阔阔真公主出嫁波斯。",icon:"⛵"},{date:"1295",title:"归抵威尼斯",location:"威尼斯",lat:45.44,lng:12.32,desc:"离家二十四载，富甲一方。"},
-    {date:"1298",title:"狱中书",location:"热那亚",lat:44.40,lng:8.94,desc:"俘于热那亚——狱中口述东方见闻。",icon:"📚"},{date:"1324",title:"终老",location:"威尼斯",lat:45.44,lng:12.32,desc:"临终：「我讲述的还不及其所见一半」"}]}
+    {date:"1254",title:"生于威尼斯",location:"威尼斯",lat:45.44,lng:12.32,desc:"商人家庭，一见东方。"},
+    {date:"1271",title:"启程东行",location:"威尼斯",lat:45.44,lng:12.32,desc:"十七岁随父叔出发。",icon:"⛵"},
+    {date:"1275",title:"上都觐见",location:"正蓝旗",lat:42.24,lng:115.99,desc:"忽必烈甚喜，命仕元朝。",icon:"👑"},
+    {date:"1275",title:"大都",location:"北京",lat:39.90,lng:116.40,desc:"学蒙语，受重用。"},
+    {date:"1292",title:"护送归途",location:"泉州",lat:24.87,lng:118.68,desc:"护送阔阔真公主出嫁波斯。",icon:"⛵"},
+    {date:"1295",title:"归抵威尼斯",location:"威尼斯",lat:45.44,lng:12.32,desc:"离家二十四载，富甲一方。"},
+    {date:"1298",title:"狱中书",location:"热那亚",lat:44.40,lng:8.94,desc:"俘于热那亚——狱中口述东方见闻。",icon:"📚"},
+    {date:"1324",title:"终老",location:"威尼斯",lat:45.44,lng:12.32,desc:"临终：「我讲述的还不及其所见的一半」"}
+  ]}
 ];
 var cur,step=-1,playing=false,timer,animId,markers=[],lines=[],traveler=null,currentLayer=0,tileLayer=null;
 var map=L.map("map",{center:[25,40],zoom:2,minZoom:2,zoomControl:false,attributionControl:false,preferCanvas:true,zoomSnap:0,wheelPxPerZoomLevel:120,worldCopyJump:true});
@@ -98,7 +201,8 @@ function select(id){
 function renderTL(){
   var el=document.getElementById("timeline");el.innerHTML="";
   if(!cur)return;
-  cur.events.forEach(function(e,i){var d=document.createElement("div");d.className="tl-item";d.id="tl-"+i;
+  cur.events.forEach(function(e,i){
+    var d=document.createElement("div");d.className="tl-item";d.id="tl-"+i;
     d.innerHTML='<span class="tl-step">'+(i+1)+'</span><div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';
     d.onclick=function(){goto(i)};el.appendChild(d);
   });

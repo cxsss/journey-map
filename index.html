@@ -1,5 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>轨迹地图</title>
+<meta name="theme-color" content="#0a0a12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&amp;family=Noto+Sans+SC:wght@300;400;500;600;700&amp;family=Noto+Serif+SC:wght@600;700;900&amp;display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+:root{--bg:#0a0a12;--surface:#16161e;--border:rgba(255,255,255,.06);--border-strong:rgba(255,255,255,.1);--text:#fff;--text-2:#9ca3af;--text-3:#6b7280;--gold:#dc9a5c;--gold-border:#d4af37;--rose:#c86060}
+body{font-family:"Urbanist","Noto Sans SC","PingFang SC",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
+body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+::selection{background:rgba(220,154,92,.3)}
+.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+.app-loading.hide{opacity:0;pointer-events:none}
+.loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.container{width:100%;max-width:760px;padding:72px 28px;display:flex;flex-direction:column;align-items:center;gap:56px;position:relative;z-index:1}
+.hero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+.hero-icon{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,rgba(220,154,92,.1),rgba(220,154,92,.03));border:1px solid rgba(220,154,92,.12);display:flex;align-items:center;justify-content:center;font-size:34px}
+.hero h1{font-family:"Noto Serif SC",serif;font-size:44px;font-weight:900;letter-spacing:6px;background:linear-gradient(180deg,#ece2d0,#d4c8b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .sub{font-size:15px;font-weight:400;color:var(--text-2);letter-spacing:3px}
+.sep{width:1px;height:48px;background:linear-gradient(180deg,transparent,var(--border),transparent)}
+.cards{display:flex;gap:20px;width:100%}
+.card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px 30px 30px;text-decoration:none;color:var(--text);transition:all .4s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-2px);border-color:var(--border-strong)}
+.card.journey:hover{box-shadow:0 0 0 1px rgba(220,154,92,.06),0 12px 48px rgba(220,154,92,.04)}
+.card.history:hover{box-shadow:0 0 0 1px rgba(192,96,96,.06),0 12px 48px rgba(192,96,96,.04)}
+.card-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:16px}
+.card .icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.card.journey .icon-wrap{background:rgba(220,154,92,.08);color:var(--gold)}
+.card.history .icon-wrap{background:rgba(192,96,96,.08);color:var(--rose)}
+.card h2{font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;letter-spacing:2px;color:#e0d8cc}
+.card p{font-size:13px;font-weight:400;color:var(--text-2);line-height:1.7}
+.card .tags{display:flex;gap:8px;flex-wrap:wrap}
+.card .tag{font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:.5px}
+.card.journey .tag{background:rgba(220,154,92,.06);color:var(--gold)}
+.card.history .tag{background:rgba(192,96,96,.06);color:var(--rose)}
+.card .arrow{position:absolute;bottom:28px;right:28px;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-3);transition:all .4s;opacity:0;transform:translateX(-4px)}
+.card:hover .arrow{opacity:1;transform:translateX(0)}
+.card.journey:hover .arrow{border-color:rgba(220,154,92,.3);color:var(--gold)}
+.card.history:hover .arrow{border-color:rgba(192,96,96,.3);color:var(--rose)}
+.footer{font-size:11px;font-weight:400;color:var(--text-3);text-align:center}
+.footer .sep2{margin:0 8px;color:rgba(255,255,255,.06)}
+@media(max-width:640px){.cards{flex-direction:column}.hero h1{font-size:32px}.container{padding:48px 20px;gap:40px}}
+</style>
+</head>
 <body>
-
 <div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="container">
   <div class="hero">
