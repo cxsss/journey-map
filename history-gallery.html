@@ -78,6 +78,9 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .leaflet-popup-tip-container{opacity:0!important}
 .leaflet-popup-close-button{color:var(--text-3)!important;top:6px!important;right:6px!important;font-size:14px!important}
 .leaflet-popup-close-button:hover{color:var(--text)!important}
+/* animated dash */
+.journey-line{stroke-dasharray:6 8;animation:dashflow 1s linear infinite}
+@keyframes dashflow{to{stroke-dashoffset:-30}}
 </style>
 </head>
 <body>
@@ -173,12 +176,12 @@ function setTile(index){
 var lc=document.getElementById("layerCtrl");
 tileProviders.forEach(function(p,i){
   var b=document.createElement("button");
-  b.className="layer-btn"+(i===0?" active":"");
+  b.className="layer-btn"+(i===1?" active":"");
   b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;
   b.onclick=function(){setTile(i)};
   lc.appendChild(b);
 });
-setTile(0);
+setTile(1);
 function makeIcon(e,i,col,isA){
   var r=isA?34:26,em=e.icon||"📍",c=isA?"#f0c040":col;
   return L.divIcon({className:"journey-marker",html:'<div class="marker-body'+(isA?" active":"")+'" style="width:'+r+'px;height:'+r+'px;border-color:'+c+';box-shadow:0 0 10px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.35)">'+em+'</div>',iconSize:[r,r],iconAnchor:[r/2,r/2]});
@@ -217,7 +220,7 @@ function renderMap(){
   var coords=cur.events.map(function(e){return[e.lat,e.lng]});
   for(var i=0;i<coords.length-1;i++){(function(p1,p2){
     var pts=bezierPath(p1,p2);
-    lines.push(L.polyline(pts,{color:cur.color,weight:1.5,opacity:.2,dashArray:"6 8",interactive:false}).addTo(map));
+    lines.push(L.polyline(pts,{color:cur.color,weight:1.5,opacity:.22,className:"journey-line",interactive:false}).addTo(map));
   })(coords[i],coords[i+1])}
   cur.events.forEach(function(e,i){
     var a=i===step;

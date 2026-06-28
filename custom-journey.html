@@ -81,6 +81,10 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
 .leaflet-popup-close-button:hover{color:var(--text)!important}
 #mapToast{position:absolute;top:68px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(22,22,30,.8);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:10px;padding:8px 18px;font-size:12px;color:var(--text-2);pointer-events:none;opacity:0;transition:opacity .4s}
 #mapToast.show{opacity:1}
+/* animated dash */
+.journey-line{stroke-dasharray:8 6;animation:dashflow .8s linear infinite}
+.journey-line-curve{stroke-dasharray:4 8;animation:dashflow 1.2s linear infinite}
+@keyframes dashflow{to{stroke-dashoffset:-30}}
 </style>
 </head>
 <body>
@@ -137,12 +141,12 @@ function setTile(index){
 var lc=document.getElementById("layerCtrl");
 tileProviders.forEach(function(p,i){
   var b=document.createElement("button");
-  b.className="layer-btn"+(i===0?" active":"");
+  b.className="layer-btn"+(i===1?" active":"");
   b.innerHTML='<span class="tip">'+p.name+'</span>'+p.icon;
   b.onclick=function(){setTile(i)};
   lc.appendChild(b);
 });
-setTile(0);
+setTile(1);
 var markers=[],polyline;
 function makeIcon(e,i,isA){
   var r=isA?36:28,em=e.icon||"📍",c=isA?"#f0c040":"var(--gold-border)";
@@ -153,14 +157,14 @@ function renderMap(){
   markers=[];if(polyline)map.removeLayer(polyline);
   var coords=data.map(function(e){return[e.lat,e.lng]});
   if(coords.length>1){
-    polyline=L.polyline(coords,{color:"#dc9a5c",weight:2,opacity:.45,dashArray:"8 6"}).addTo(map);
+    polyline=L.polyline(coords,{color:"#dc9a5c",weight:2,opacity:.45,className:"journey-line"}).addTo(map);
     for(var i=0;i<coords.length-1;i++){
       (function(p1,p2){
         var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2;
         var ctrl=[mlat+Math.min(2,.3/Math.abs(p2[0]-p1[0]||1)),mlng+(Math.random()-.5)*1.5];
         var pts=[];
         for(var j=0;j<=30;j++){var t=j/30;pts.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}
-        L.polyline(pts,{color:"#dc9a5c",weight:1,opacity:.18,dashArray:"4 8",interactive:false}).addTo(map);
+        L.polyline(pts,{color:"#dc9a5c",weight:1,opacity:.22,className:"journey-line-curve",interactive:false}).addTo(map);
       })(coords[i],coords[i+1]);
     }
   }
