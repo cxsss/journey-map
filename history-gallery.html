@@ -249,10 +249,10 @@ function goto(i){
     var from=cur.events[prev];
     var path=bezierPath([from.lat,from.lng],[e.lat,e.lng],80);
     var f=0;cancelAnimationFrame(animId);
-    function af(){
+    var af=function(){
       if(f>=path.length){traveler.setLatLng([e.lat,e.lng]);return}
       traveler.setLatLng(path[f]);f+=2;animId=requestAnimationFrame(af);
-    }
+    };
     af();
   }else{traveler.setLatLng([e.lat,e.lng])}
   var toast=document.getElementById("mapToast");
