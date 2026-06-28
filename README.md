@@ -7,18 +7,19 @@
 ```
 journey-site/
 ├── index.html              # 首页入口
+├── custom-journey.html     # 自定义历程（旅程风格地图样式 + 时间轴 + 统计）
+├── history-gallery.html    # 历史长廊（历史人物路线播放 + 地图交互）
 ├── life-journey-map.html   # 单人历程模式
 ├── encounter-map.html      # 多人相遇交汇模式
-├── pivi-journey.html       # Pivi 风格旅程地图（地图样式+时间轴+统计）
 ```
 
-- [Pivi 风格旅程地图](pivi-journey.html) — 参考 Making History Sandbox 与 Pivi's travels 的地图样式、时间轴与统计视图
+- `custom-journey.html` 已融合 Pivi 风格与 Make History Sandbox 的地图、时间轴与统计；
+- `history-gallery.html` 保持历史长廊流程，同时升级为更沉浸的地图/统计展现。
 
 ## 🚀 快速上线
 
 ### 在线访问
 - [轨迹地图](https://cxsss.github.io/journey-map/index.html)
-- [Pivi 风格旅程地图](https://cxsss.github.io/journey-map/pivi-journey.html)
 
 ### Netlify（最快）
 1. 打开 https://app.netlify.com/drop

@@ -1,80 +1,92 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>自定义历程 · 轨迹地图</title>
-<meta name="theme-color" content="#0a0a12">
-<link rel="preconnect" href="https://fon2026-06-28 19:12:38.googleapis.com">
-<link rel="preconnect" href="https://fon2026-06-28 19:12:38.gstatic.com" crossorigin>
-<link href="https://fon2026-06-28 19:12:38.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-:root{--bg:#0a0a12;--surface:#16161e;--surface-2:#1e1e2a;--border:rgba(255,255,255,.06);--border-strong:rgba(255,255,255,.1);--text:#fff;--text-2:#9ca3af;--text-3:#6b7280;--gold:#dc9a5c}
-body{font-family:"Urbanist","Noto Sans SC","PingFang SC",sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;transition:all .4s cubic-bezier(.4,0,.2,1)}
-body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-even2026-06-28 19:12:38:none;z-index:0}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3);min-width:40px;min-height:40px}
-
-.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
-.app-loading.hide{opacity:0;pointer-even2026-06-28 19:12:38:none}
-.loader{width:24px;height:24px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--gold);animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.sidebar{width:360px;min-width:360px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5;transition:width .35s cubic-bezier(.4,0,.2,1),min-width .35s cubic-bezier(.4,0,.2,1)}
-.sidebar.editing{width:500px;min-width:500px}
-.sidebar-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.sidebar-head .kicker{font-size:11px;font-weight:600;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:4px}
-.sidebar-head h2{font-family:"Noto Serif SC","S2026-06-28 19:12:38ong",serif;font-size:18px;font-weight:700;letter-spacing:2px;color:#e0d8cc}
-.btn-edit{padding:6px 16px;border-radius:16px;border:1px solid var(--border-strong);background:rgba(255,255,255,.02);color:var(--text-2);font-size:11px;cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);font-family:inherit}
-.btn-edit:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
-
-.timeline{flex:1;overflow-y:auto;padding:10px 16px 16px 22px;scroll-behavior:smooth}
-.tl-item{position:relative;padding:13px 0 13px 24px;cursor:pointer;border-radius:8px;margin:2px 0;transition:all .4s cubic-bezier(.4,0,.2,1)}
-.tl-item:hover{background:rgba(255,255,255,.02)}
-.tl-item.active{background:rgba(220,154,92,.06)}
-.tl-item::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
-.tl-item:first-child::before{top:18px}
-.tl-item:last-child::before{bottom:calc(100%-18px)}
-.tl-item::after{content:"";position:absolute;left:3px;top:20px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--border-strong);transition:all .4s cubic-bezier(.4,0,.2,1);z-index:1}
-.tl-item.active::after{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(220,154,92,.5);transform:scale(1.35)}
-.tl-date{font-size:10px;font-weight:500;color:var(--text-3);margin-bottom:3px;letter-spacing:.5px}
-.tl-title{font-size:13px;font-weight:500;line-height:1.4}
-.tl-loc{font-size:11px;font-weight:400;color:var(--text-2);margin-top:3px}
-
-.editor{display:none;flex:1;padding:16px 20px;flex-direction:column;gap:12px;overflow-y:auto}
-.sidebar.editing .timeline{display:none}
-.sidebar.editing .editor{display:flex}
-.editor textarea{flex:1;min-height:240px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:16px;font-family:"SF Mono","JetBrains Mono","Consolas",monospace;font-size:12px;line-height:1.6}
-.editor textarea:focus{outline:none;border-color:rgba(220,154,92,.25)}
-.editor .hint{font-size:11px;color:var(--text-2)}
-.editor .hint code{background:var(--surface-2);padding:2px 6px;border-radius:4px;color:var(--gold);font-size:10px}
-.editor-actions{display:flex;gap:8px;flex-wrap:wrap}
-.editor-actions button{padding:7px 16px;border-radius:16px;font-size:11px;cursor:pointer;border:1px solid var(--border-strong);background:rgba(255,255,255,.02);color:var(--text-2);transition:all .4s cubic-bezier(.4,0,.2,1);font-family:inherit}
-.editor-actions button:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
-.btn-apply{background:var(--gold)!important;color:#0a0a0f!important;border-color:var(--gold)!important}
-.btn-apply:hover{opacity:.85}
-
-.map-wrap{flex:1;position:relative;background:#05050a}
-#map{width:100%;height:100%}
-.map-ctrl{position:absolute;top:16px;left:16px;z-index:1001;display:flex;gap:8px}
-.btn-ctrl{height:32px;padding:0 14px;border-radius:16px;border:1px solid var(--border);background:rgba(10,10,18,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text-2);font-size:11px;cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:5px}
-.btn-ctrl:hover{border-color:var(--border-strong);color:var(--text);background:rgba(255,255,255,.04)}
-.sta2026-06-28 19:12:38{position:absolute;top:16px;right:16px;z-index:1000;background:rgba(10,10,18,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:8px 16px;display:flex;gap:16px}
-.sta2026-06-28 19:12:38 .n{font-size:20px;font-weight:700;color:var(--gold)}
-.sta2026-06-28 19:12:38 .l{font-size:9px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:1px}
-.custom-popup .leaflet-popup-content-wrapper{background:rgba(22,22,30,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);border:1px solid var(--border-strong);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
-.custom-popup .leaflet-popup-tip{background:rgba(22,22,30,.96)}
-@media(max-width:768px){body{flex-direction:column}.sidebar{width:100%;min-width:unset;max-height:36vh}.sidebar.editing{width:100%;min-width:unset;max-height:60vh}.map-wrap{flex:1;min-height:64vh}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自定义历程 · 轨迹地图</title>
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    :root{--bg:#05060d;--surface:#090b14;--surface-2:#111822;--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.14);--text:#eef2ff;--text-2:#94a3c6;--text-3:#6e7f9f;--accent:#86c1ff;--accent-strong:#5fa4ff;--gold:#f5c24f}
+    body{font-family:"Urbanist","Noto Sans SC","PingFang SC",sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;transition:all .4s cubic-bezier(.4,0,.2,1)}
+    body::after{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-thumb{border-radius:4px;background:var(--text-3);min-width:40px;min-height:40px}
+    .app-loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+    .app-loading.hide{opacity:0;pointer-events:none}
+    .loader{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.14);border-top-color:var(--accent);animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .sidebar{width:360px;min-width:360px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:5;transition:width .35s cubic-bezier(.4,0,.2,1),min-width .35s cubic-bezier(.4,0,.2,1)}
+    .sidebar.editing{width:520px;min-width:520px}
+    .sidebar-head{padding:22px 26px 18px;border-bottom:1px solid var(--border)}
+    .sidebar-head .kicker{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-2);text-transform:uppercase;margin-bottom:10px}
+    .sidebar-head h2{font-family:"Noto Serif SC","serif";font-size:24px;font-weight:900;letter-spacing:2px;color:#eef2ff;line-height:1.1}
+    .sidebar-head p{margin-top:10px;font-size:13px;line-height:1.75;color:var(--text-2)}
+    .btn-edit{margin-top:18px;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--text);font-size:12px;cursor:pointer;transition:all .25s ease;letter-spacing:.02em}
+    .btn-edit:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16)}
+    .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:18px 22px 0}
+    .summary-card{background:rgba(17,24,39,.88);border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:6px}
+    .summary-card .stat-num{font-size:24px;font-weight:800;color:var(--accent)}
+    .summary-card .stat-label{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em}
+    .timeline{flex:1;overflow-y:auto;padding:18px 22px 22px;scroll-behavior:smooth}
+    .tl-item{position:relative;padding:16px 18px 16px 28px;cursor:pointer;border-radius:18px;margin:0 0 12px 0;border:1px solid transparent;background:rgba(255,255,255,.02);transition:all .25s ease}
+    .tl-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.08)}
+    .tl-item.active{background:linear-gradient(135deg,rgba(134,193,255,.14),rgba(33,115,255,.08));border-color:rgba(134,193,255,.22)}
+    .tl-item::before{content:"";position:absolute;left:12px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--border);transition:all .25s ease}
+    .tl-item.active::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 8px rgba(134,193,255,.12)}
+    .tl-date{font-size:11px;color:var(--text-2);letter-spacing:.08em;margin-bottom:8px}
+    .tl-title{font-size:15px;font-weight:700;line-height:1.4;color:#f8fafc}
+    .tl-loc{font-size:12px;color:var(--text-2);margin-top:8px}
+    .tl-desc{font-size:12px;line-height:1.7;color:#c8d4ec;margin-top:10px}
+    .editor{display:none;flex:1;flex-direction:column;padding:18px 22px 22px;gap:14px;overflow-y:auto}
+    .sidebar.editing .timeline{display:none}
+    .sidebar.editing .editor{display:flex}
+    .editor textarea{flex:1;min-height:260px;background:var(--surface-2);border:1px solid rgba(255,255,255,.08);border-radius:18px;color:var(--text);padding:18px;font-family:"SF Mono","JetBrains Mono","Consolas",monospace;font-size:13px;line-height:1.8;resize:none}
+    .editor .hint{font-size:11px;color:var(--text-2)}
+    .editor .hint code{background:rgba(255,255,255,.03);padding:3px 7px;border-radius:6px;color:var(--accent);font-size:11px}
+    .editor-actions{display:flex;flex-wrap:wrap;gap:10px}
+    .editor-actions button{padding:10px 16px;border-radius:999px;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--text);transition:all .25s ease}
+    .editor-actions button:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+    .btn-apply{background:var(--accent);color:#05060d;border-color:transparent}
+    .map-wrap{flex:1;position:relative;background:#02040d}
+    #map{width:100%;height:100%}
+    .map-ctrl{position:absolute;top:18px;left:18px;z-index:1001;display:flex;gap:10px}
+    .btn-ctrl{height:38px;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(3,11,23,.88);color:var(--text-2);font-size:12px;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;gap:8px}
+    .btn-ctrl:hover{border-color:rgba(134,193,255,.3);color:var(--text);background:rgba(255,255,255,.06)}
+    .map-stats{position:absolute;top:18px;right:18px;z-index:1000;background:rgba(3,11,23,.92);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.08);border-radius:20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px;min-width:320px}
+    .map-stat{display:flex;flex-direction:column;gap:6px}
+    .map-stat .stat-num{font-size:20px;font-weight:800;color:var(--accent)}
+    .map-stat .stat-label{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em}
+    .map-toast{position:absolute;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);z-index:1000;padding:14px 18px;border-radius:999px;background:rgba(2,6,17,.93);border:1px solid rgba(134,193,255,.16);color:#eef2ff;font-size:12px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+    .map-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .custom-popup .leaflet-popup-content-wrapper{background:rgba(7,10,18,.97);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:var(--text);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+    .custom-popup .leaflet-popup-tip{background:rgba(7,10,18,.97)}
+    .marker-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--accent),#4d7eff);color:#fff;font-size:14px;font-weight:700;box-shadow:0 0 0 4px rgba(134,193,255,.12);border:2px solid rgba(255,255,255,.12);transition:transform .25s ease}
+    .marker-badge.active{transform:scale(1.12);box-shadow:0 0 0 10px rgba(134,193,255,.18)}
+    @media(max-width:980px){.sidebar{width:100%;min-width:unset;max-height:44vh}.sidebar.editing{max-height:62vh;width:100%;min-width:unset}.map-stats{min-width:unset;width:calc(100% - 36px);left:18px;right:18px;top:auto;bottom:18px;grid-template-columns:repeat(2,minmax(0,1fr));}.map-ctrl{top:auto;bottom:104px;left:18px}}
+    @media(max-width:700px){body{flex-direction:column}.summary-grid{grid-template-columns:1fr}.sidebar-head h2{font-size:22px}.btn-ctrl{flex:1}.map-stats{grid-template-columns:1fr}.editor-actions{flex-direction:column}}
+  </style>
 </head>
 <body>
 <div class="app-loading" id="loading"><div class="loader"></div></div>
 <div class="sidebar" id="sidebar">
   <div class="sidebar-head">
-    <div><div class="kicker">My Journey</div><h2>🧭 自定义历程</h2></div>
+    <div>
+      <div class="kicker">My Journey</div>
+      <h2>🧭 自定义历程</h2>
+      <p>融合历史长廊与旅程风格，地图与时间轴统一呈现。</p>
+    </div>
     <button class="btn-edit" id="btnEdit">编辑数据</button>
+  </div>
+  <div class="summary-grid">
+    <div class="summary-card"><div class="stat-num" id="sidebarStatCount">0</div><div class="stat-label">足迹</div></div>
+    <div class="summary-card"><div class="stat-num" id="sidebarStatCities">0</div><div class="stat-label">城市</div></div>
+    <div class="summary-card"><div class="stat-num" id="sidebarStatRange">—</div><div class="stat-label">时间范围</div></div>
+    <div class="summary-card"><div class="stat-num" id="sidebarStatDistance">0</div><div class="stat-label">总里程</div></div>
   </div>
   <div class="timeline" id="timeline"></div>
   <div class="editor" id="editorPanel">
@@ -95,34 +107,48 @@ body::after{content:"";position:fixed;inset:0;background-image:url("data:image/s
     <a href="index.html" class="btn-ctrl">← 返回首页</a>
     <button class="btn-ctrl" id="btnOverview">全景</button>
   </div>
-  <div class="sta2026-06-28 19:12:38">
-    <div><div class="n" id="statCount">0</div><div class="l">足迹</div></div>
+  <div class="map-stats">
+    <div class="map-stat"><div class="stat-num" id="statBlockCount">0</div><div class="stat-label">足迹</div></div>
+    <div class="map-stat"><div class="stat-num" id="statBlockCities">0</div><div class="stat-label">城市</div></div>
+    <div class="map-stat"><div class="stat-num" id="statBlockRange">—</div><div class="stat-label">时间范围</div></div>
   </div>
+  <div class="map-toast" id="mapToast"></div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-var sample=[{date:"2020 春",title:"起点",location:"北京",lat:39.90,lng:116.40,desc:"一切从这里开始。",icon:"🚀"},{date:"2020 夏",title:"成都",location:"成都",lat:30.57,lng:104.07,desc:"天府之国。",icon:"🌶️"},{date:"2021 春",title:"三亚",location:"三亚",lat:18.25,lng:109.50,desc:"碧海蓝天。"},{date:"2021 秋",title:"拉萨",location:"拉萨",lat:29.65,lng:91.10,desc:"日光洒肩。",icon:"🏔️"},{date:"2022",title:"上海",location:"上海",lat:31.23,lng:121.47,desc:"在路上。",icon:"🌟"}];
-var data=JSON.parse(JSON.stringify(sample)),active=-1;
+var sample=[
+  {date:"2020 春",title:"起点",location:"北京",lat:39.90,lng:116.40,desc:"一切从这里开始。",icon:"🚀"},
+  {date:"2020 夏",title:"成都",location:"成都",lat:30.57,lng:104.07,desc:"天府之国。",icon:"🌶️"},
+  {date:"2021 春",title:"三亚",location:"三亚",lat:18.25,lng:109.50,desc:"碧海蓝天。"},
+  {date:"2021 秋",title:"拉萨",location:"拉萨",lat:29.65,lng:91.10,desc:"日光洒肩。",icon:"🏔️"},
+  {date:"2022",title:"上海",location:"上海",lat:31.23,lng:121.47,desc:"在路上。",icon:"🌟"}
+];
+var data=JSON.parse(JSON.stringify(sample)),active=-1,markers=[],polyline;
 var map=L.map("map",{center:[33,112],zoom:4,minZoom:2,zoomControl:false,attributionControl:false});
-L.control.zoom({position:"bottomright"}).addTo(map);L.control.attribution({position:"bottomright",prefix:!1}).addTo(map);
+L.control.zoom({position:"bottomright"}).addTo(map);
+L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:18,attribution:"CARTO · OSM"}).addTo(map);
-var markers=[],polyline;
-function renderMap(){markers.forEach(function(m){map.removeLayer(m.marker)});markers=[];if(polyline)map.removeLayer(polyline);var coords=data.map(function(e){return[e.lat,e.lng]});if(coords.length>1){polyline=L.polyline(coords,{color:"#dc9a5c",weight:2,opacity:.45,dashArray:"8 6"}).addTo(map);for(var i=0;i<coords.length-1;i++){(function(p1,p2){var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2,ctrl=[mlat+Math.min(2,.3/Math.abs(p2[0]-p1[0]||1)),mlng+(Math.random()-.5)*1.5],p2026-06-28 19:12:38=[];for(var j=0;j<=30;j++){var t=j/30;p2026-06-28 19:12:38.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}L.polyline(p2026-06-28 19:12:38,{color:"#dc9a5c",weight:1,opacity:.18,dashArray:"4 8",interactive:!1}).addTo(map)})(coords[i],coords[i+1])}}data.forEach(function(e,i){var m=L.circleMarker([e.lat,e.lng],{radius:e.icon?7:5,fillColor:"#dc9a5c",color:"#fff",weight:1.5,fillOpacity:.8}).addTo(map);m.bindPopup('<div style="font-family:Urbanist,Noto Sans SC,sans-serif;min-width:180px"><div style="font-size:15px;font-weight:600;margin-bottom:4px;color:#e0d8cc">'+(e.icon||"")+" "+e.title+'</div><div style="font-size:11px;color:#9ca3af">'+e.location+' · '+e.date+'</div><div style="font-size:12px;line-height:1.5;color:#6b7280;margin-top:6px">'+(e.desc||"")+'</div></div>',{maxWidth:260,className:"custom-popup"});m.on("click",function(){scroll(i)});markers.push(m)})}
-function renderTL(){var el=document.getElementById("timeline");el.innerHTML="";document.getElementById("statCount").textContent=data.length;data.forEach(function(e,i){var d=document.createElement("div");d.className="tl-item";d.innerHTML='<div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+" "+e.title+'</div><div class="tl-loc">'+e.location+'</div>';d.onclick=function(){focus(i)};el.appendChild(d)})}
-function focus(i){if(active===i){active=-1;reset();fit();return}active=i;document.querySelectorAll(".tl-item").forEach(function(el,j){el.classList.toggle("active",j===i)});markers.forEach(function(m,j){m.setRadius(j===i?8:5);m.se2026-06-28 19:12:38tyle({fillColor:j===i?"#f0c040":"#dc9a5c",color:j===i?"#f0c040":"#fff",weight:j===i?3:1.5,fillOpacity:j===i?1:.8});if(j===i)m.bringToFront()});scroll(i)}
+function formatDistance(m){return m<1000?m.toFixed(0)+" m":(m/1000).toFixed(1)+" km"}
+function haversine(a,b){var R=6371e3,phi1=a[0]*Math.PI/180,phi2=b[0]*Math.PI/180,deltaPhi=(b[0]-a[0])*Math.PI/180,deltaLambda=(b[1]-a[1])*Math.PI/180;var x=Math.sin(deltaPhi/2)*Math.sin(deltaPhi/2)+Math.cos(phi1)*Math.cos(phi2)*Math.sin(deltaLambda/2)*Math.sin(deltaLambda/2);var c=2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));return R*c}
+function updateSummary(){var count=data.length;var cities=new Set(data.map(function(e){return e.location})).size;var distance=0;for(var i=0;i<data.length-1;i++){distance+=haversine([data[i].lat,data[i].lng],[data[i+1].lat,data[i+1].lng])}var range=count?data[0].date+" · "+data[count-1].date:"—";document.getElementById("sidebarStatCount").textContent=count;document.getElementById("sidebarStatCities").textContent=cities;document.getElementById("sidebarStatRange").textContent=range;document.getElementById("sidebarStatDistance").textContent=formatDistance(distance);document.getElementById("statBlockCount").textContent=count;document.getElementById("statBlockCities").textContent=cities;document.getElementById("statBlockRange").textContent=range}
+function buildMarkerIcon(item,index){var isActive=index===active;return L.divIcon({className:'custom-marker',html:'<div class="marker-badge'+(isActive?" active":"")+'">'+(item.icon||index+1)+'</div>',iconSize:[42,42],iconAnchor:[21,21],popupAnchor:[0,-24]})}
+function renderMap(){markers.forEach(function(m){map.removeLayer(m)});markers=[];if(polyline)map.removeLayer(polyline);var coords=data.map(function(e){return[e.lat,e.lng]});if(coords.length>1){polyline=L.polyline(coords,{color:"#f5c24f",weight:2,opacity:.5,dashArray:"8 6"}).addTo(map);for(var i=0;i<coords.length-1;i++){(function(p1,p2){var mlat=(p1[0]+p2[0])/2,mlng=(p1[1]+p2[1])/2,ctrl=[mlat+Math.min(2,Math.abs(p2[0]-p1[0])||1)*0.25,mlng+(Math.random()-.5)*1.5],curve=[];for(var j=0;j<=30;j++){var t=j/30;curve.push([(1-t)*(1-t)*p1[0]+2*(1-t)*t*ctrl[0]+t*t*p2[0],(1-t)*(1-t)*p1[1]+2*(1-t)*t*ctrl[1]+t*t*p2[1]])}L.polyline(curve,{color:"#f5c24f",weight:1,opacity:.16,dashArray:"4 8",interactive:false}).addTo(map)})(coords[i],coords[i+1])}}data.forEach(function(e,i){var marker=L.marker([e.lat,e.lng],{icon:buildMarkerIcon(e,i),zIndexOffset:i===active?1000:0}).addTo(map);marker.bindPopup('<div style="font-family:Urbanist,Noto Sans SC,sans-serif;min-width:200px"><div style="font-size:15px;font-weight:700;margin-bottom:6px;color:#eef2ff">'+(e.icon||"")+' '+e.title+'</div><div style="font-size:11px;color:#94a3c6">'+e.location+' · '+e.date+'</div><div style="font-size:12px;line-height:1.6;color:#c8d4e0;margin-top:8px">'+(e.desc||"")+'</div></div>',{maxWidth:280,className:"custom-popup"});marker.on("click",function(){focus(i)});markers.push(marker)})}
+function renderTL(){var el=document.getElementById("timeline");el.innerHTML="";data.forEach(function(e,i){var d=document.createElement("div");d.className="tl-item";d.innerHTML='<div class="tl-date">'+e.date+'</div><div class="tl-title">'+(e.icon||"")+' '+e.title+'</div><div class="tl-loc">'+e.location+'</div>'+(e.desc?'<div class="tl-desc">'+e.desc+'</div>':'');d.onclick=function(){focus(i)};el.appendChild(d)});updateSummary()}
+function focus(i){if(active===i){active=-1;reset();fit();updateSummary();return}active=i;document.querySelectorAll(".tl-item").forEach(function(el,j){el.classList.toggle("active",j===i)});markers.forEach(function(m,j){m.setIcon(buildMarkerIcon(data[j],j));if(j===i){m.openPopup()}});scroll(i);showToast(data[i].title+" · "+data[i].location+" · "+data[i].date)}
 function scroll(i){var items=document.querySelectorAll(".tl-item");if(items[i])items[i].scrollIntoView({behavior:"smooth",block:"center"})}
-function reset(){document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active")});markers.forEach(function(m){m.setRadius(5);m.se2026-06-28 19:12:38tyle({fillColor:"#dc9a5c",color:"#fff",weight:1.5,fillOpacity:.8})})}
+function reset(){document.querySelectorAll(".tl-item").forEach(function(el){el.classList.remove("active")});markers.forEach(function(m,j){m.setIcon(buildMarkerIcon(data[j],j))});active=-1}
 function fit(){var coords=data.map(function(e){return[e.lat,e.lng]});if(coords.length)map.flyToBounds(L.latLngBounds(coords).pad(.2),{duration:1.2,maxZoom:6})}
-document.getElementById("btnOverview").onclick=function(){active=-1;reset();fit()};
+function showToast(text){var toast=document.getElementById("mapToast");toast.textContent=text;toast.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(function(){toast.classList.remove("show")},2600)}
+document.getElementById("btnOverview").onclick=function(){active=-1;reset();fit();updateSummary()};
 var sidebar=document.getElementById("sidebar"),editor=document.getElementById("editor"),editing=false;
 document.getElementById("btnEdit").onclick=function(){editing=!editing;sidebar.classList.toggle("editing",editing);this.textContent=editing?"返回视图":"编辑数据";if(editing)editor.value=JSON.stringify(data,null,2)};
 document.getElementById("btnCancel").onclick=function(){editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"};
-document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTL();fit();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
+document.getElementById("btnApply").onclick=function(){try{var d=JSON.parse(editor.value);if(!Array.isArray(d))throw new Error("必须为数组");d.forEach(function(item,i){if(!item.date||!item.title||!item.location)throw new Error("第"+(i+1)+"项缺字段");if(typeof item.lat!="number"||typeof item.lng!="number")throw new Error("第"+(i+1)+"项缺经纬度")});data=d;active=-1;renderMap();renderTL();fit();updateSummary();editing=false;sidebar.classList.remove("editing");document.getElementById("btnEdit").textContent="编辑数据"}catch(e){alert(e.message)}};
 document.getElementById("btnSample").onclick=function(){editor.value=JSON.stringify(sample,null,2)};
 document.getElementById("fileInput").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){editor.value=ev.target.result};r.readAsText(f)};
 document.getElementById("btnDownload").onclick=function(){var b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download="journey.json";a.click();URL.revokeObjectURL(u)};
-renderMap();renderTL();fit();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
+renderMap();renderTL();fit();updateSummary();setTimeout(function(){document.getElementById("loading").classList.add("hide")},300);
 </script>
-<div style="position:fixed;bottom:8px;right:12px;z-index:9999;font-size:10px;font-family:monospace;color:rgba(255,255,255,.06);pointer-even2026-06-28 19:12:38:none">2026-06-28 19:12:38</div>
+<div style="position:fixed;bottom:8px;right:12px;z-index:9999;font-size:10px;font-family:monospace;color:rgba(255,255,255,.06);pointer-events:none">2026-06-28 19:12:38</div>
 </body>
 </html>
