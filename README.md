@@ -16,6 +16,10 @@ journey-site/
 
 ## 🚀 快速上线
 
+### 在线访问
+- 首页：https://cxsss.github.io/journey-map/index.html
+- Pivi 风格旅程地图：https://cxsss.github.io/journey-map/pivi-journey.html
+
 ### Netlify（最快）
 1. 打开 https://app.netlify.com/drop
 2. 把这个文件夹拖进去
